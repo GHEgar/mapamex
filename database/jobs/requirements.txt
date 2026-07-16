@@ -1,0 +1,15 @@
+# Database
+SQLAlchemy==1.4.54
+psycopg2-binary==2.9.11
+
+# Migrations
+alembic==1.13.3
+
+# Configuration
+python-dotenv==1.2.1
+
+# Logging
+rich==14.3.2
+
+# S3 (Storage / SeaweedFS) — usado por run_dump_layers_csv.py
+boto3==1.35.49

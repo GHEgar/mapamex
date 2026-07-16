@@ -1,0 +1,78 @@
+import logging
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.api.deps import ADMIN_ROLE, get_current_user, require_role, verify_csrf
+from app.api.metrics import COUNTER_MEDIA_BUCKET_WRITES, incr
+from app.core.database import get_db
+from app.models.storage_bucket import StorageBucket
+from app.models.project import Project, UserProject
+from app.models.user import Usuario
+from app.schemas.storage_bucket import (
+    StorageBucketCreate,
+    StorageBucketResponse,
+    StorageBucketUpdate,
+)
+
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/storage-buckets", tags=["storage-buckets"])
+
+
+@router.get("", response_model=list[StorageBucketResponse])
+async def list_accessible_buckets(
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    query = (
+        db.query(StorageBucket)
+        .join(Project, Project.id == StorageBucket.project_id)
+        .filter(StorageBucket.is_active.is_(True), Project.is_active.is_(True))
+    )
+    if current_user.role != ADMIN_ROLE:
+        query = query.join(
+            UserProject,
+            (UserProject.project_id == Project.id)
+            & (UserProject.user_id == current_user.id),
+        )
+    return query.order_by(StorageBucket.storage_bucket).all()
+
+
+@router.post("", response_model=StorageBucketResponse, status_code=status.HTTP_201_CREATED)
+async def create_bucket(
+    payload: StorageBucketCreate,
+    _: Usuario = Depends(require_role(["tetlamamakani"])),
+    __: Usuario = Depends(verify_csrf),
+    db: Session = Depends(get_db),
+):
+    if db.query(StorageBucket).filter(StorageBucket.storage_bucket == payload.storage_bucket).first():
+        raise HTTPException(status.HTTP_409_CONFLICT, detail="storage_bucket ya registrado")
+    if db.query(Project).filter(Project.id == payload.project_id).first() is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="project_id inválido")
+    bucket = StorageBucket(**payload.model_dump())
+    db.add(bucket)
+    db.commit()
+    db.refresh(bucket)
+    incr(COUNTER_MEDIA_BUCKET_WRITES)
+    logger.info("action=bucket.create user_id=%s storage_bucket=%s", _.id, bucket.storage_bucket)
+    return bucket
+
+
+@router.patch("/{bucket_id}", response_model=StorageBucketResponse)
+async def update_bucket(
+    bucket_id: int,
+    payload: StorageBucketUpdate,
+    _: Usuario = Depends(require_role(["tetlamamakani"])),
+    __: Usuario = Depends(verify_csrf),
+    db: Session = Depends(get_db),
+):
+    bucket = db.query(StorageBucket).filter(StorageBucket.id == bucket_id).first()
+    if bucket is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="bucket no encontrado")
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(bucket, field, value)
+    db.commit()
+    db.refresh(bucket)
+    incr(COUNTER_MEDIA_BUCKET_WRITES)
+    logger.info("action=bucket.update user_id=%s bucket_id=%s", _.id, bucket.id)
+    return bucket

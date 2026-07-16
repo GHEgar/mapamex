@@ -1,0 +1,146 @@
+name: CI
+
+# CI del monorepo MapaMex. Corre los tests SOLO del servicio cuyos archivos cambiaron
+# (filtros por ruta con dorny/paths-filter).
+
+on:
+  push:
+    branches-ignore: [develop, production]
+  pull_request:
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      cms_api: ${{ steps.filter.outputs.cms_api }}
+      cms_admin: ${{ steps.filter.outputs.cms_admin }}
+      visor: ${{ steps.filter.outputs.visor }}
+      visor_backend: ${{ steps.filter.outputs.visor_backend }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            cms_api:
+              - 'cms/api/**'
+            cms_admin:
+              - 'cms/admin/**'
+            visor:
+              - 'visor/frontend/**'
+            visor_backend:
+              - 'visor/backend/**'
+
+  cms-backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.cms_api == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cms/api
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: cms/api/pyproject.toml
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Lint (ruff)
+        run: ruff check app tests
+      - name: Tests
+        env:
+          PROJECT_NAME: cms-test
+          DATABASE_URL: 'sqlite:///:memory:'
+          SECRET_KEY: test-secret-key-do-not-use-in-production
+          REDIS_URL: 'redis://localhost:6379/0'
+          STORAGE_ENDPOINT: localhost:9000
+          STORAGE_PUBLIC_ENDPOINT: localhost:9000
+          STORAGE_USE_SSL: 'false'
+          STORAGE_VISOR_ACCESS_KEY: test-visor
+          STORAGE_VISOR_SECRET_KEY: test-visor-secret
+          STORAGE_CMS_ACCESS_KEY: test-cms
+          STORAGE_CMS_SECRET_KEY: test-cms-secret
+          STORAGE_ASSETS_ACCESS_KEY: test-assets
+          STORAGE_ASSETS_SECRET_KEY: test-assets-secret
+          CORS_ORIGINS: '["http://localhost:3000"]'
+          CSRF_SECRET_KEY: test-csrf-secret-key-do-not-use-in-production
+        run: pytest -q
+
+  cms-admin:
+    needs: changes
+    if: ${{ needs.changes.outputs.cms_admin == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cms/admin
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: cms/admin/package-lock.json
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Test (if present)
+        run: npm test --if-present
+      - name: Dead code check (if present)
+        run: npm run check:dead-code:strict --if-present
+      - name: Build
+        env:
+          VITE_ADMIN_API_URL: /api/administrador
+          VITE_NODE_ENV: production
+        run: npm run build
+
+  visor:
+    needs: changes
+    if: ${{ needs.changes.outputs.visor == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: visor/frontend
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: visor/frontend/package-lock.json
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Test (with coverage thresholds)
+        run: npm run test:coverage
+      - name: Dead code check
+        run: npm run check:dead-code:strict
+      - name: Build
+        env:
+          VITE_NODE_ENV: production
+        run: npm run build
+
+  visor-backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.visor_backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: visor/backend
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: visor/backend/requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest httpx
+      - name: Tests
+        run: pytest test -q

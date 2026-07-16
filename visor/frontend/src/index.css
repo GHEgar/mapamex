@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+:root {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    color-scheme: light;
+    color: #213547;
+    background-color: #ffffff;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+@theme {
+    --breakpoint-3xl: 120rem;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --color-primary:        #E11D74;
+    --color-primary-deep:   #BE185D;
+    --color-primary-soft:   #FCE7F0;
+    --color-secondary:      #FB7185;
+    --color-secondary-soft: #FFE4E6;
+    --color-numeralia:      #1E293B;
+    --color-graphite:       #64748B;
+    --radius-sm:  0.5rem;
+    --radius-md:  0.875rem;
+    --radius-lg:  1.5rem;
+    --radius-xl:  1.75rem;
+    --radius-2xl: 2rem;
+    --shadow-sm: 0 0 0 1px rgb(15 23 42 / 0.06);
+    --shadow:    0 0 0 1px rgb(15 23 42 / 0.06);
+    --shadow-md: 0 1px 2px rgb(15 23 42 / 0.04), 0 0 0 1px rgb(15 23 42 / 0.06);
+    --shadow-lg: 0 2px 6px rgb(15 23 42 / 0.05), 0 0 0 1px rgb(15 23 42 / 0.06);
+}
+
+
+.scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+}
+
+.scrollbar-thumb-gray-400::-webkit-scrollbar-thumb {
+    background-color: rgb(156 163 175 / 0.5);
+    border-radius: 2px;
+}
+
+.scrollbar-thumb-gray-500::-webkit-scrollbar-thumb {
+    background-color: rgb(107 114 128 / 0.7);
+}
+
+html {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(156 163 175 / 0.5) transparent;
+}
+
+html::-webkit-scrollbar {
+    width: 6px;
+}
+
+html::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+    background-color: rgb(156 163 175 / 0.5);
+    border-radius: 3px;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(107 114 128 / 0.7);
+}
+
+.mask-bottom {
+    mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+}
+
+@keyframes notice-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+@keyframes evento-fun-bounce {
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.4); }
+    22%  { transform: translate(0, var(--ty)) rotate(720deg); opacity: 1; animation-timing-function: cubic-bezier(0.1, 0.6, 0.4, 1); }
+    32%  { transform: translate(calc(var(--dx) * 0.3), calc(var(--ty) * 0.55)) rotate(1080deg); opacity: 1; animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.4); }
+    42%  { transform: translate(calc(var(--dx) * 0.55), var(--ty)) rotate(1440deg); opacity: 1; animation-timing-function: cubic-bezier(0.1, 0.6, 0.4, 1); }
+    52%  { transform: translate(calc(var(--dx) * 0.7), calc(var(--ty) * 0.8)) rotate(1740deg); opacity: 1; animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.4); }
+    62%  { transform: translate(calc(var(--dx) * 0.85), var(--ty)) rotate(2040deg); opacity: 1; animation-timing-function: cubic-bezier(0.1, 0.6, 0.4, 1); }
+    70%  { transform: translate(calc(var(--dx) * 0.94), calc(var(--ty) * 0.93)) rotate(2240deg); opacity: 1; animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.4); }
+    78%  { transform: translate(var(--dx), var(--ty)) rotate(2400deg); opacity: 1; animation-timing-function: linear; }
+    92%  { transform: translate(var(--dx), var(--ty)) rotate(2400deg); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--ty)) rotate(2400deg); opacity: 0; }
+}
+
+.evento-fun-ball {
+    animation: evento-fun-bounce 5200ms linear forwards;
+    will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .evento-fun-ball {
+        animation-duration: 200ms;
+        animation-timing-function: ease-out;
+    }
+}

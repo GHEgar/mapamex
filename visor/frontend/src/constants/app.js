@@ -1,0 +1,5 @@
+export const APP_VERSION = __APP_VERSION__;
+export const APP_LOC = __APP_LOC__;
+
+export const LICENCIA_URL = 'https://mapamex.com/ns/wp-content/uploads/2026/04/declaracion_de_licencia_de_uso_atribuciones_de_informacion_publica_del_MAPAMEX_2026.pdf';
+export const LICENCIA_TEXTO = 'Al descargar estos datos, usted acepta utilizarlos exclusivamente para fines no comerciales (académicos, personales o de investigación) y se compromete a citar la fuente oficial (MapaMex). Se prohíbe cualquier modificación que desvirtúe la integridad de la información.';

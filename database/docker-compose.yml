@@ -1,0 +1,86 @@
+name: database
+
+services:
+  postgres-primary:
+    image: postgis/postgis:18-3.6-alpine
+    container_name: database-primary
+    restart: unless-stopped
+    ports:
+      - "${PG_BIND_ADDRESS:-127.0.0.1}:${PG_PRIMARY_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      PGDATA: ${PGDATA}
+    volumes:
+      - ${POSTGRES_PRIMARY_DATA}:/var/lib/postgresql/data
+      - ./postgres/certs:/var/lib/postgresql/certs
+      - ./postgres/primary/entrypoint.sh:/entrypoint-ssl.sh:ro
+      - ./postgres/primary/init:/docker-entrypoint-initdb.d
+      - ./postgres/primary/config/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./restore:/restore
+      - ./scripts:/scripts:ro
+    entrypoint: /entrypoint-ssl.sh
+    command: ["postgres",
+              "-c", "config_file=/etc/postgresql/postgresql.conf",
+              "-c", "max_connections=${POSTGRES_MAX_CONNECTIONS}",
+              "-c", "shared_buffers=${POSTGRES_SHARED_BUFFERS}",
+              "-c", "effective_cache_size=${POSTGRES_EFFECTIVE_CACHE_SIZE}"]
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - db-network
+
+  pg-backup:
+    build: ./backup
+    container_name: database-backup
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      BACKUP_DBS: ${BACKUP_DBS:-}
+      BACKUP_UID: ${BACKUP_UID}
+      BACKUP_GID: ${BACKUP_GID}
+    volumes:
+      - ${BACKUP_DATA}:/backups
+      - ./postgres/certs:/certs:ro
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - db-network
+
+  jobs:
+    build: ./jobs
+    container_name: database-jobs
+    restart: unless-stopped
+    environment:
+      DATABASE_DB_USER: ${POSTGRES_USER}
+      DATABASE_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_DB_HOST: postgres-primary
+      DATABASE_DB_PORT: "5432"
+      DATABASE_DB_NAME: ${POSTGRES_DB}
+      DATABASE_DB_SSLMODE: require
+      AO_ENDPOINT: ${AO_ENDPOINT}
+      VISOR_AO_BUCKET: ${VISOR_AO_BUCKET}
+      VISOR_AO_ACCESS_KEY: ${VISOR_AO_ACCESS_KEY}
+      VISOR_AO_SECRET_KEY: ${VISOR_AO_SECRET_KEY}
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - db-network
+
+networks:
+  db-network:
+    name: database-network
+    driver: bridge

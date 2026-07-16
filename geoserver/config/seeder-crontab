@@ -1,0 +1,1 @@
+0 8 * * * /bin/sh /seed/seed-cache.sh >> /proc/1/fd/1 2>&1

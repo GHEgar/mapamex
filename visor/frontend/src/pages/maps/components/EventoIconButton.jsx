@@ -1,0 +1,70 @@
+import { useState } from 'react';
+import Icon from '@components/Icon';
+import { SIDER_TRANSITION_TIMING } from '@constants/sider';
+
+const FallbackIcon = ({ sizeClass = 'w-5 h-5' }) => (
+    <Icon name="pin_fallback" className={`${sizeClass} text-primary`} />
+);
+
+const EventoIconButton = ({ iconoUrl, imagenUrl, titulo, isMenuOpen, isHovered = false, compactClassName = 'size-9' }) => {
+    const [hovering, setHovering] = useState(false);
+    const accent = isMenuOpen || hovering;
+
+    if (!isHovered) {
+        const collapsedSrc = iconoUrl || imagenUrl;
+        return (
+            <div
+                className="relative flex items-center justify-center w-full h-full"
+                style={{ transitionTimingFunction: SIDER_TRANSITION_TIMING }}
+                onMouseEnter={() => setHovering(true)}
+                onMouseLeave={() => setHovering(false)}
+            >
+                <div className={`
+                    flex items-center justify-center ${compactClassName} rounded-2xl overflow-hidden transition-opacity duration-200
+                    ${accent ? 'opacity-100' : 'opacity-90 hover:opacity-100'}
+                `}>
+                    {collapsedSrc ? (
+                        <img
+                            src={collapsedSrc}
+                            alt={titulo || 'evento'}
+                            loading="lazy"
+                            decoding="async"
+                            className="size-full object-cover"
+                        />
+                    ) : (
+                        <FallbackIcon sizeClass="w-5 h-5" />
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    const expandedSrc = imagenUrl || iconoUrl;
+    return (
+        <div
+            className={`
+                relative w-full overflow-hidden rounded-2xl cursor-pointer transition-opacity duration-200
+                ${isMenuOpen ? 'opacity-100' : 'opacity-90 hover:opacity-100'}
+            `}
+            style={{ transitionTimingFunction: SIDER_TRANSITION_TIMING }}
+            onMouseEnter={() => setHovering(true)}
+            onMouseLeave={() => setHovering(false)}
+        >
+            {expandedSrc ? (
+                <img
+                    src={expandedSrc}
+                    alt={titulo || 'evento'}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-auto block"
+                />
+            ) : (
+                <div className="flex items-center justify-center w-full py-6 bg-gray-50">
+                    <FallbackIcon sizeClass="w-8 h-8" />
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default EventoIconButton;

@@ -1,0 +1,24 @@
+from sqlalchemy import Boolean, Column, DateTime, Enum, Integer, String, Text
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
+from app.core.time import utcnow
+
+
+class Usuario(Base):
+    __tablename__ = "usuarios"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=False, index=True)
+    email = Column(String, unique=True, nullable=False, index=True)
+    hashed_password = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    role = Column(
+        Enum("tetlamamakani", "editora", name="user_roles"), nullable=False
+    )
+    must_change_password = Column(Boolean, default=True, nullable=False)
+    avatar_url = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    password_changed_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+    storage_uploads = relationship("StorageFile", back_populates="uploaded_by_user")

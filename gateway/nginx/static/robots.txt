@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /administrador/
+Disallow: /storage/console/
+Disallow: /geoserver/web/
+Disallow: /geoserver/rest/
+Disallow: /cms/
+
+Sitemap: https://mapamex.jalisco.gob.mx/sitemap.xml

@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+asyncpg
+alembic
+python-dotenv
+coloredlogs
+pydantic
+pydantic-settings
+gunicorn
+apscheduler
+rich
+pytz
+fastmcp
+prometheus-fastapi-instrumentator
+boto3

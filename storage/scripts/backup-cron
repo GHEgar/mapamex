@@ -1,0 +1,1 @@
+0 3 1 * * /bin/bash /opt/storage/scripts/backup.sh >> /var/log/storage-backup.log 2>&1

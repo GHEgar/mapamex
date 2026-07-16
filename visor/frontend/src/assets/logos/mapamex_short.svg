@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="MapaMex">
+  <rect x="4" y="4" width="112" height="112" rx="20" fill="none" stroke="#E11D74" stroke-width="8"/>
+  <text x="60" y="75" font-family="sans-serif" font-size="32" font-weight="bold" fill="#E11D74" text-anchor="middle">Mx</text>
+</svg>

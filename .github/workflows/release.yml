@@ -1,0 +1,173 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag para las imagenes (default: sha)'
+        required: false
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: cms-api
+            context: ./cms/api
+            dockerfile: ./cms/api/Dockerfile
+            target: production
+            build_args: ''
+          - name: cms-nginx
+            context: ./cms
+            dockerfile: ./cms/nginx/Dockerfile
+            target: ''
+            build_args: |
+              VITE_NODE_ENV=production
+              VITE_ADMIN_API_URL=/api/administrador
+          - name: visor-backend
+            context: ./visor/backend
+            dockerfile: ./visor/backend/Dockerfile
+            target: production
+            build_args: ''
+          - name: visor-mcp
+            context: ./visor
+            dockerfile: ./visor/servers/Dockerfile
+            target: production
+            build_args: ''
+          - name: database-jobs
+            context: ./database/jobs
+            dockerfile: ./database/jobs/Dockerfile
+            target: ''
+            build_args: ''
+          - name: database-backup
+            context: ./database/backup
+            dockerfile: ./database/backup/Dockerfile
+            target: ''
+            build_args: ''
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login a GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Metadatos
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}
+          tags: |
+            type=ref,event=tag
+            type=sha,format=long
+            type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
+
+      - name: Build y push
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
+          build-args: ${{ matrix.build_args }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+          provenance: true
+          sbom: true
+
+      - uses: sigstore/cosign-installer@v3
+
+      - name: Firmar imagen
+        run: cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}@${{ steps.push.outputs.digest }}
+
+      - name: Reportar digest
+        run: |
+          {
+            echo "### ${{ matrix.name }}"
+            echo '```'
+            echo "${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}@${{ steps.push.outputs.digest }}"
+            echo '```'
+          } >> $GITHUB_STEP_SUMMARY
+
+  gateway:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login a GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Metadatos
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/gateway-nginx
+          tags: |
+            type=ref,event=tag
+            type=sha,format=long
+            type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
+
+      - name: Build y push
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./gateway
+          build-contexts: |
+            visor=./visor
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VITE_BASE_PATH=/
+            VITE_BACKEND_API_HOST=/visor/api/
+            VITE_GEOSERVER_URL=/geoserver/
+            VITE_NODE_ENV=production
+            VITE_APP_ENV=production
+          cache-from: type=gha,scope=gateway
+          cache-to: type=gha,mode=max,scope=gateway
+          provenance: true
+          sbom: true
+
+      - uses: sigstore/cosign-installer@v3
+
+      - name: Firmar imagen
+        run: cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}/gateway-nginx@${{ steps.push.outputs.digest }}
+
+      - name: Reportar digest
+        run: |
+          {
+            echo "### gateway-nginx"
+            echo '```'
+            echo "${{ env.REGISTRY }}/${{ github.repository }}/gateway-nginx@${{ steps.push.outputs.digest }}"
+            echo '```'
+          } >> $GITHUB_STEP_SUMMARY

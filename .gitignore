@@ -1,0 +1,175 @@
+# ──────────────────────────────────────────────────────────────
+# Docs enlazadas por symlink desde mapamex-docs (no versionar aquí)
+# ──────────────────────────────────────────────────────────────
+/CLAUDE.md
+/AGENTS.md
+/opencode.json
+
+# ──────────────────────────────────────────────────────────────
+# Secretos y variables de entorno
+# ──────────────────────────────────────────────────────────────
+.env
+.env.*
+*.env
+!.env.example
+!*.env.example
+!*.example
+
+secrets/
+credentials/
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+*.secret
+*.token
+
+# TLS del gateway / nginx
+cms/nginx/ssl/*
+!cms/nginx/ssl/.gitkeep
+
+# ──────────────────────────────────────────────────────────────
+# Agentes de IA — archivos locales
+# ──────────────────────────────────────────────────────────────
+.claude/settings.local.json
+.gemini/
+.opencode/auth.json
+.opencode/local/
+.opencode/cache/
+.*.md
+.*rrules
+
+# ──────────────────────────────────────────────────────────────
+# Python
+# ──────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.venv/
+venv/
+env/
+ENV/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+.hypothesis/
+.ipynb_checkpoints
+
+# ──────────────────────────────────────────────────────────────
+# Node / Frontend
+# ──────────────────────────────────────────────────────────────
+node_modules/
+dist-ssr/
+coverage/
+.vitest
+.cache/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.local
+*.local.md
+docker-compose.local.yaml
+
+# ──────────────────────────────────────────────────────────────
+# IDEs / Sistema operativo
+# ──────────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*.sw?
+*~
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store
+Thumbs.db
+
+# ──────────────────────────────────────────────────────────────
+# Logs, temporales y runtime
+# ──────────────────────────────────────────────────────────────
+*.log
+logs/
+*tmp/
+.tmp-export/
+*.bak
+*.backup
+*.pid
+*.seed
+*.pid.lock
+
+# ──────────────────────────────────────────────────────────────
+# Bases de datos, dumps y respaldos
+# ──────────────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.sql.gz
+*.dump
+*.tar.gz
+dump.rdb
+.minio.sys/
+
+# Respaldos: se ignora el contenido, se conserva la estructura
+**/backups/*
+!**/backups/.gitkeep
+infobox-backups/
+
+# Restores: se ignora el contenido, se conservan scripts y estructura
+**/restore/*
+!**/restore/.gitkeep
+!database/restore/do-restore.sh
+!database/restore/restore.sh
+
+# ──────────────────────────────────────────────────────────────
+# Artefactos generados por servicio
+# ──────────────────────────────────────────────────────────────
+# version-api (database, geoserver, storage) y nginx (gateway)
+**/version-api/html/version.json
+gateway/nginx/version.json
+
+# cms
+cms/api/_docs/
+
+# database
+database/volumes/
+database/postgres/certs/
+database/backup/mc
+database/jobs/**/*.csv
+database/jobs/bootstrap/_layers_export.json
+database/jobs/_legacy_etl/
+
+# geoserver
+geoserver/geoserver_data/
+geoserver/data_dir/
+geoserver/plugins/
+geoserver/fonts/*
+!geoserver/fonts/.gitkeep
+Garet-*.otf
+geoserver/**/server.xml
+geoserver/config/global.xml
+
+# storage
+storage/config/*.json
+
+# visor
+visor/backend/visor_*_cache.json
+visor/scripts/layers_export.json

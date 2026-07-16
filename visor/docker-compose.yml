@@ -1,0 +1,159 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    profiles: ["dev"]
+    init: true
+    environment:
+      VITE_BACKEND_API_HOST: ${VITE_BACKEND_API_HOST:-/api/}
+      VITE_GEOSERVER_URL: ${VITE_GEOSERVER_URL:-/geoserver/}
+      VITE_STORAGE_ORIGIN: ${VITE_STORAGE_ORIGIN:-}
+      VITE_NODE_ENV: ${VITE_NODE_ENV:-development}
+      VITE_APP_ENV: ${VITE_APP_ENV:-dev}
+      VITE_PORT: ${VITE_PORT:-5173}
+      VITE_SITE_URL: ${VITE_SITE_URL:-}
+      VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
+      GEOSERVER_DEV_TARGET: ${GEOSERVER_DEV_TARGET:-}
+      BACKEND_DEV_TARGET: ${BACKEND_DEV_TARGET:-}
+      CMS_DEV_TARGET: ${CMS_DEV_TARGET:-}
+    volumes:
+      - ./frontend/src:/app/src:ro
+      - ./frontend/public:/app/public:ro
+      - ./frontend/index.html:/app/index.html:ro
+      - ./frontend/vite.config.js:/app/vite.config.js:ro
+      - ./frontend/vitest.config.js:/app/vitest.config.js:ro
+      - frontend-node-modules:/app/node_modules
+    ports:
+      - "${FRONTEND_PORT:-5173}:${VITE_PORT:-5173}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${VITE_PORT:-5173}/ > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  frontend-build:
+    build:
+      context: ./frontend
+      args:
+        VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
+        VITE_BACKEND_API_HOST: ${VITE_BACKEND_API_HOST:-/visor/api/}
+        VITE_GEOSERVER_URL: ${VITE_GEOSERVER_URL:-/geoserver/}
+        VITE_SITE_URL: ${VITE_SITE_URL:-}
+        VITE_NODE_ENV: ${VITE_NODE_ENV:-production}
+        VITE_APP_ENV: ${VITE_APP_ENV:-beta}
+        VITE_STORAGE_ORIGIN: ${VITE_STORAGE_ORIGIN:-}
+    profiles: ["build"]
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./frontend/dist:/output
+    entrypoint: ["sh", "-c", "rm -rf /output/* && cp -r /app/dist/* /output/"]
+
+  backend:
+    image: ${VISOR_BACKEND_IMAGE:-visor-backend:local}
+    build:
+      context: ./backend
+      target: ${BACKEND_TARGET:-development}
+    init: true
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DEBUG: ${DEBUG:-True}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["*"]}
+      LOG_LEVEL: ${LOG_LEVEL:-DEBUG}
+      BACKEND_PORT: ${BACKEND_PORT:-8001}
+      GEOSERVER_URL: ${GEOSERVER_URL}
+      GEOSERVER_USER: ${GEOSERVER_USER}
+      GEOSERVER_PASSWORD: ${GEOSERVER_PASSWORD}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME}
+      STORAGE_PUBLIC_URL: ${STORAGE_PUBLIC_URL}
+      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT}
+      STORAGE_PUBLIC_ENDPOINT: ${STORAGE_PUBLIC_ENDPOINT}
+      STORAGE_ACCESS_KEY: ${STORAGE_ACCESS_KEY}
+      STORAGE_SECRET_KEY: ${STORAGE_SECRET_KEY}
+      STORAGE_BUCKET: ${STORAGE_BUCKET}
+      STORAGE_PRESIGN_TTL_SECONDS: ${STORAGE_PRESIGN_TTL_SECONDS}
+      DOWNLOAD_CACHE_TTL_HOURS: ${DOWNLOAD_CACHE_TTL_HOURS}
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-8}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-8}
+      DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-8}
+      VISOR_INTERNAL_TOKEN: ${VISOR_INTERNAL_TOKEN:-}
+      CMS_BACKEND_URL: ${CMS_BACKEND_URL:-}
+      CMS_VERIFY_SSL: ${CMS_VERIFY_SSL:-true}
+      EMBED_KEY_CACHE_TTL_SECONDS: ${EMBED_KEY_CACHE_TTL_SECONDS:-300}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:${BACKEND_PORT:-8000}/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      default: {}
+      mapamex-network:
+        aliases:
+          - visor-backend
+      database-network: {}
+    restart: unless-stopped
+
+  visor-mcp:
+    image: ${VISOR_MCP_IMAGE:-visor-mcp:local}
+    build:
+      context: .
+      dockerfile: servers/Dockerfile
+      target: ${BACKEND_TARGET:-development}
+    init: true
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DEBUG: ${DEBUG:-True}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      GEOSERVER_URL: ${GEOSERVER_URL}
+      GEOSERVER_USER: ${GEOSERVER_USER}
+      GEOSERVER_PASSWORD: ${GEOSERVER_PASSWORD}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME}
+      DB_POOL_SIZE: ${MCP_DB_POOL_SIZE:-2}
+      DB_MAX_OVERFLOW: ${MCP_DB_MAX_OVERFLOW:-2}
+      MCP_WORKERS: ${MCP_WORKERS:-2}
+      STORAGE_PUBLIC_URL: ${STORAGE_PUBLIC_URL}
+      VISOR_INTERNAL_TOKEN: ${VISOR_INTERNAL_TOKEN:-}
+      CMS_BACKEND_URL: ${CMS_BACKEND_INTERNAL_URL:-http://cms-api:8000}
+      CMS_VERIFY_SSL: ${CMS_VERIFY_SSL:-true}
+      VISOR_PUBLIC_BASE_URL: ${VISOR_PUBLIC_BASE_URL:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      default: {}
+      mapamex-network:
+        aliases:
+          - visor-mcp
+      database-network: {}
+    restart: unless-stopped
+
+volumes:
+  frontend-node-modules:
+
+networks:
+  default:
+    name: visor-network
+  mapamex-network:
+    external: true
+  database-network:
+    external: true

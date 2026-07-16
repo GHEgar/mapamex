@@ -1,0 +1,123 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useMapsContext } from '@hooks/useMaps';
+import { useSider } from '@contexts/SiderContext';
+import Icon from '@components/Icon';
+import Tooltip from '@components/Tooltip';
+import CloseButton from '@components/CloseButton';
+import { findLayerDef } from '@pages/maps/helpers/wmsConfig';
+import { SWIPE_HANDLE_COLOR } from '@pages/maps/helpers/swipeTheme';
+import DatePill from './ActiveLayers/DatePill';
+import { computeLabel } from './ActiveLayers/datePillHelpers';
+
+const ActionsHint = ({ visible }) => (
+    <div
+        className={`pointer-events-none absolute left-1/2 -translate-x-1/2 -top-14 transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}
+    >
+        <div className="bg-secondary-soft border-2 border-secondary text-secondary py-2 px-5 rounded-full font-sans font-bold text-xs whitespace-nowrap shadow-lg">
+            Barra de acciones
+            <div
+                className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-0 h-0"
+                style={{
+                    borderLeft: '7px solid transparent',
+                    borderRight: '7px solid transparent',
+                    borderTop: `7px solid ${SWIPE_HANDLE_COLOR}`,
+                }}
+            />
+        </div>
+    </div>
+);
+
+const SwipeSlotControls = () => {
+    const {
+        compareMode, exitCompareMode, toggleSwipeOrientation,
+        selectedLayerForSymbology, allLayers, dateLoops, setSelectedLayer,
+    } = useMapsContext();
+    const { width: siderWidth, isOpen: isSiderOpen, isMobile: isMobileSider } = useSider();
+    const siderShift = !isMobileSider && isSiderOpen ? siderWidth / 2 : 0;
+    const [hintPhase, setHintPhase] = useState(isMobileSider ? 'hidden' : 'visible');
+
+    useEffect(() => {
+        if (isMobileSider) return;
+        const t1 = setTimeout(() => setHintPhase('fading'), 500);
+        const t2 = setTimeout(() => setHintPhase('hidden'), 1000);
+        return () => { clearTimeout(t1); clearTimeout(t2); };
+    }, [isMobileSider]);
+
+    const layerId = selectedLayerForSymbology?.id || null;
+    const layerDef = useMemo(() => (layerId ? findLayerDef(layerId, allLayers) : null), [layerId, allLayers]);
+    const rasterPeriodicity = layerDef?.rasterPeriodicity || null;
+
+    const inA = !!(layerId && compareMode?.paneA?.activeLayerIds?.includes(layerId));
+    const inB = !!(layerId && compareMode?.paneB?.activeLayerIds?.includes(layerId));
+    const filterA = compareMode?.paneA?.filters?.[layerId]?.date;
+    const filterB = compareMode?.paneB?.filters?.[layerId]?.date;
+    const labelA = useMemo(() => computeLabel(filterA, rasterPeriodicity), [filterA, rasterPeriodicity]);
+    const labelB = useMemo(() => computeLabel(filterB, rasterPeriodicity), [filterB, rasterPeriodicity]);
+    const isLooping = !!(layerId && dateLoops?.[layerId]?.isPlaying);
+    const isLoopingA = isLooping && compareMode?.activeSlot === 'A';
+    const isLoopingB = isLooping && compareMode?.activeSlot === 'B';
+
+    if (!compareMode?.active) return null;
+    const isHorizontal = compareMode.swipeOrientation === 'horizontal';
+
+    const handlePillClick = () => {
+        if (selectedLayerForSymbology) setSelectedLayer?.(selectedLayerForSymbology);
+    };
+
+    const showA = inA && labelA.label;
+    const showB = inB && labelB.label;
+    const hasDates = showA || showB;
+
+    const closeBtn = (
+        <CloseButton
+            onConfirm={exitCompareMode}
+            tooltip="Cerrar comparador"
+            tooltipPlacement="top"
+            confirmTitle="¿Cerrar la comparación?"
+            confirmDescription="Se descartará la comparación actual y volverás al estado original del mapa."
+            confirmText="Sí, cerrar comparador"
+            confirmPlacement="top"
+            confirmClassName="left-1/2 -translate-x-1/2"
+            size="size-10"
+            iconSize="size-8"
+        />
+    );
+
+    return (
+        <div
+            className={`fixed z-20 flex flex-col items-center gap-2 ${isMobileSider ? 'bottom-16' : 'bottom-4'}`}
+            style={{ left: `calc(50% + ${siderShift}px)`, transform: 'translateX(-50%)' }}
+        >
+            {hasDates && closeBtn}
+
+            <div className="relative flex items-center gap-2 px-3 py-2 bg-white rounded-full shadow-lg border border-gray-200">
+                {!isMobileSider && hintPhase !== 'hidden' && (
+                    <ActionsHint visible={hintPhase === 'visible'} />
+                )}
+
+                {showA && (
+                    <DatePill slot="A" label={labelA.label} kind={labelA.kind} onClick={handlePillClick} isLooping={isLoopingA} size="md" autoWidth />
+                )}
+
+                <Tooltip content={isHorizontal ? 'Cambiar a barra vertical' : 'Cambiar a barra horizontal'} placement="bottom" delay={300}>
+                    <button
+                        type="button"
+                        onClick={toggleSwipeOrientation}
+                        className="size-10 flex items-center justify-center rounded-full bg-slate-100 text-primary-deep hover:bg-primary-deep hover:text-white transition-all cursor-pointer shrink-0"
+                        aria-label={isHorizontal ? 'Cambiar a barra vertical' : 'Cambiar a barra horizontal'}
+                    >
+                        <Icon name="swipe_orientacion" className={`w-5 h-5 transition-transform ${isHorizontal ? '' : 'rotate-90'}`} />
+                    </button>
+                </Tooltip>
+
+                {showB && (
+                    <DatePill slot="B" label={labelB.label} kind={labelB.kind} onClick={handlePillClick} isLooping={isLoopingB} size="md" autoWidth />
+                )}
+
+                {!hasDates && closeBtn}
+            </div>
+        </div>
+    );
+};
+
+export default SwipeSlotControls;
