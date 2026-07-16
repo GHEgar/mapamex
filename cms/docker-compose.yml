@@ -47,8 +47,6 @@ services:
     command: ./scripts/start_backend.sh
     secrets:
       - cms_env
-    volumes:
-      - ./api:/app
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -89,8 +87,6 @@ services:
         done
     secrets:
       - cms_env
-    volumes:
-      - ./api:/app
     depends_on:
       api:
         condition: service_started
