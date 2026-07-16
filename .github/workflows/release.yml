@@ -95,17 +95,21 @@ jobs:
           provenance: true
           sbom: true
 
+      - name: Ref en minusculas
+        id: img
+        run: echo "ref=${GITHUB_REPOSITORY,,}/${{ matrix.name }}" >> "$GITHUB_OUTPUT"
+
       - uses: sigstore/cosign-installer@v3
 
       - name: Firmar imagen
-        run: cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}@${{ steps.push.outputs.digest }}
+        run: cosign sign --yes ${{ env.REGISTRY }}/${{ steps.img.outputs.ref }}@${{ steps.push.outputs.digest }}
 
       - name: Reportar digest
         run: |
           {
             echo "### ${{ matrix.name }}"
             echo '```'
-            echo "${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}@${{ steps.push.outputs.digest }}"
+            echo "${{ env.REGISTRY }}/${{ steps.img.outputs.ref }}@${{ steps.push.outputs.digest }}"
             echo '```'
           } >> $GITHUB_STEP_SUMMARY
 
@@ -158,16 +162,20 @@ jobs:
           provenance: true
           sbom: true
 
+      - name: Ref en minusculas
+        id: img
+        run: echo "ref=${GITHUB_REPOSITORY,,}/gateway-nginx" >> "$GITHUB_OUTPUT"
+
       - uses: sigstore/cosign-installer@v3
 
       - name: Firmar imagen
-        run: cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}/gateway-nginx@${{ steps.push.outputs.digest }}
+        run: cosign sign --yes ${{ env.REGISTRY }}/${{ steps.img.outputs.ref }}@${{ steps.push.outputs.digest }}
 
       - name: Reportar digest
         run: |
           {
             echo "### gateway-nginx"
             echo '```'
-            echo "${{ env.REGISTRY }}/${{ github.repository }}/gateway-nginx@${{ steps.push.outputs.digest }}"
+            echo "${{ env.REGISTRY }}/${{ steps.img.outputs.ref }}@${{ steps.push.outputs.digest }}"
             echo '```'
           } >> $GITHUB_STEP_SUMMARY
