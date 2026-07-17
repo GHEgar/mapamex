@@ -6,6 +6,7 @@ import { useSider, useSiderHover } from '@contexts/SiderContext';
 import { useSearch } from '@contexts/SearchContext';
 import { useOutsideClick } from '@hooks/useOutsideClick';
 import { useScrollOverflow } from '@hooks/useScrollOverflow';
+import { useSlowLoading } from '@hooks/useSlowLoading';
 import Logo from '@components/Logo';
 import { createMenuItems, BASE_ITEMS_COUNT } from '@pages/maps/helpers/menuItems';
 import { SIDER_TRANSITION_TIMING } from '@constants/sider';
@@ -74,6 +75,7 @@ const MapSider = ({ className = '' }) => {
 
     const { shouldAutoOpenSearch, clearAutoOpen } = useSearch();
     const { isZenMode } = useZenMode();
+    const layersLoading = useSlowLoading(400);
     const contentRef = useRef(null);
     const { canScrollUp, canScrollDown } = useScrollOverflow(contentRef);
     const [autoOpenMenuId, setAutoOpenMenuId] = useState(null);
@@ -230,6 +232,7 @@ const MapSider = ({ className = '' }) => {
                         name="mapamex"
                         size={isExpanded ? 'w-57 h-17' : 'size-14'}
                         expanded={isExpanded}
+                        isLoading={layersLoading}
                         onClick={handleLogoClick}
                         tooltip={!treatAsMobile ? 'Ir al inicio' : ''}
                         tooltipPlacement='bottom'

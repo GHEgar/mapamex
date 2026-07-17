@@ -43,6 +43,22 @@ ifeq ($(DEPLOY_MODE),pull)
 endif
 	@cd $(VISOR_DIR) && $(VISOR_COMPOSE_PROD) up -d $(COMPOSE_BUILD_FLAG) --force-recreate
 	@echo "visor: deploy completado"
+	@created=$$(docker image inspect gateway-nginx:local --format '{{.Created}}' 2>/dev/null || true); \
+	 if [ -n "$$created" ]; then \
+	     epoch=$$(date -d "$$created" +%s 2>/dev/null || true); \
+	     if [ -n "$$epoch" ]; then \
+	         ref=$$(mktemp); touch -d "@$$epoch" "$$ref"; \
+	         changed=$$(find $(VISOR_DIR)/frontend/src $(VISOR_DIR)/frontend/public $(VISOR_DIR)/frontend/index.html $(VISOR_DIR)/frontend/package.json -newer "$$ref" -print -quit 2>/dev/null || true); \
+	         rm -f "$$ref"; \
+	         if [ -n "$$changed" ]; then \
+	             echo ""; \
+	             echo -e "  $(C_YELLOW)ATENCION: visor/frontend cambio DESPUES del ultimo build del gateway.$(C_RESET)"; \
+	             echo -e "  $(C_YELLOW)visor-deploy NO publica el frontend (solo backend + mcp).$(C_RESET)"; \
+	             echo -e "  $(C_YELLOW)Para publicar el frontend corre:  make gateway-deploy$(C_RESET)"; \
+	             echo ""; \
+	         fi; \
+	     fi; \
+	 fi
 
 visor-down:
 	@cd $(VISOR_DIR) && { $(VISOR_COMPOSE_DEV) --profile dev down 2>/dev/null || true; }
