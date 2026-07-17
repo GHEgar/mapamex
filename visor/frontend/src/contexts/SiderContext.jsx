@@ -27,16 +27,12 @@ export const SiderProvider = ({ children, collapsedWidth = SIDER_COLLAPSED_WIDTH
     const [lockMode, setLockMode] = useState('auto');
 
     const toggleSider = useCallback(() => {
-        if (isMobile) {
-            setIsOpen(prev => !prev);
-        }
-    }, [isMobile]);
+        setIsOpen(prev => !prev);
+    }, []);
 
     const closeSider = useCallback(() => {
-        if (isMobile) {
-            setIsOpen(false);
-        }
-    }, [isMobile]);
+        setIsOpen(false);
+    }, []);
 
     const toggleLock = useCallback(() => {
         setLockMode(prev => {

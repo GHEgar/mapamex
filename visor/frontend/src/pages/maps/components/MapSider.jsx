@@ -28,6 +28,7 @@ import EventoFunButton from './EventoFunButton';
 
 const SIDER_EVENTS_ENABLED = false;
 const EMPTY_EVENTOS = Object.freeze([]);
+const LOGO_LONG_PRESS_MS = 600;
 
 const MenuGroup = ({ items, isMobileView, autoOpenMenuId, clearAutoOpenMenu }) => items.map((item, index) => (
     <div key={item.id || index} className="transition-opacity duration-500 w-full shrink-0 overflow-x-hidden" title={item.tooltip}>
@@ -64,6 +65,7 @@ const MapSider = ({ className = '' }) => {
         isMobile,
         isOpen,
         closeSider,
+        toggleSider,
         lockMode,
         toggleLock
     } = useSider();
@@ -174,13 +176,20 @@ const MapSider = ({ className = '' }) => {
 
     const longPressRef = useRef(null);
 
+    const showStatsMarker = useCallback(async () => {
+        const stats = computeStats({ allLayers });
+        const dbStats = await getDatabaseStats();
+        showMarker?.(buildMarker({ ...stats, totalRecords: dbStats?.total_records ?? null }));
+    }, [showMarker, allLayers]);
+
     const handleLogoTouchStart = useCallback(() => {
         if (!treatAsMobile) return;
         longPressRef.current = setTimeout(() => {
             longPressRef.current = 'fired';
-            navigate('/');
-        }, 1000);
-    }, [treatAsMobile, navigate]);
+            closeSider();
+            showStatsMarker();
+        }, LOGO_LONG_PRESS_MS);
+    }, [treatAsMobile, closeSider, showStatsMarker]);
 
     const handleLogoTouchEnd = useCallback(() => {
         if (longPressRef.current && longPressRef.current !== 'fired') {
@@ -188,21 +197,19 @@ const MapSider = ({ className = '' }) => {
         }
     }, []);
 
-    const handleLogoClick = useCallback(async () => {
+    const handleLogoClick = useCallback(() => {
         trackLogoClick('mapamex');
         if (treatAsMobile) {
             if (longPressRef.current === 'fired') {
                 longPressRef.current = null;
                 return;
             }
-            closeSider();
-        } else {
-            navigate('/');
+            toggleSider();
+            return;
         }
-        const stats = computeStats({ allLayers });
-        const dbStats = await getDatabaseStats();
-        showMarker?.(buildMarker({ ...stats, totalRecords: dbStats?.total_records ?? null }));
-    }, [showMarker, treatAsMobile, closeSider, navigate, allLayers]);
+        navigate('/');
+        showStatsMarker();
+    }, [treatAsMobile, toggleSider, navigate, showStatsMarker]);
 
     return (
         <>
@@ -226,6 +233,7 @@ const MapSider = ({ className = '' }) => {
                     onTouchStart={handleLogoTouchStart}
                     onTouchEnd={handleLogoTouchEnd}
                     onTouchCancel={handleLogoTouchEnd}
+                    onTouchMove={handleLogoTouchEnd}
                     onContextMenu={(e) => treatAsMobile && e.preventDefault()}
                 >
                     <Logo
