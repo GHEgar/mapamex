@@ -45,13 +45,7 @@ const MenuButton = ({ icon, imageUrl, label, isHovered, hasActiveLayers = false,
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
         >
-            <div
-                className={`
-                    shrink-0 w-1.5 h-8 rounded transition-all duration-500
-                    ${isMenuOpen ? 'bg-secondary opacity-100' : 'opacity-0'}
-                `}
-            />
-            <span className={`relative inline-flex shrink-0 transition-all duration-500 ${isMenuOpen ? '' : '-ml-3'}`}>
+            <span className="relative inline-flex shrink-0 ml-1.5">
                 {stateImageUrl ? (
                     <img
                         src={stateImageUrl}
@@ -71,9 +65,9 @@ const MenuButton = ({ icon, imageUrl, label, isHovered, hasActiveLayers = false,
             </span>
             <span
                 className={`
-                    transition-all duration-500 truncate whitespace-nowrap font-sans ml-5
+                    transition-all duration-500 truncate whitespace-nowrap font-sans ml-8
                     ${!isHovered ? 'opacity-0 w-0' : 'opacity-100 w-auto'}
-                    ${(hasActiveLayers || isHovering || isMenuOpen) ? 'font-bold text-primary' : 'font-medium ml-8'}
+                    ${(hasActiveLayers || isHovering || isMenuOpen) ? 'font-bold text-primary' : 'font-medium'}
                 `}
             >
                 {label}
