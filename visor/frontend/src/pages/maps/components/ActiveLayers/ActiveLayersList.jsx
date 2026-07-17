@@ -5,10 +5,10 @@ import { useActiveLayersLogic } from '../../hooks/useActiveLayersLogic';
 import { useAlwaysOnTopPinning, sortItemsWithPinnedFirst } from '../../hooks/useAlwaysOnTopPinning';
 import { useLayerCollapse } from './hooks/useLayerCollapse';
 import { useLayerSorting } from './hooks/useLayerSorting';
-import { LegendsVisibilityProvider } from './hooks/useLegendsVisibility';
 import { SortableList, SortableItem } from './SortableList';
 import ActiveLayerItem from './ActiveLayerItem';
 import ActiveLayersToolbar from './ActiveLayersToolbar';
+import MapOutputActions from '../MapOutputActions';
 import Icon from '@components/Icon';
 import Tooltip from '@components/Tooltip';
 import Badge from '@components/Badge';
@@ -18,7 +18,7 @@ import { useLayers } from '@hooks/useLayers';
 import { getDefaultMapView } from '@pages/maps/helpers/defaultView';
 import { isInegiBaseMode } from '@pages/maps/helpers/basemaps';
 
-const ActiveLayersListInner = ({ onCollapseChange }) => {
+const ActiveLayersListInner = ({ onCollapseChange, onActionsOpenChange }) => {
     const {
         activeLayerIds,
         onToggleLayer,
@@ -191,7 +191,11 @@ const ActiveLayersListInner = ({ onCollapseChange }) => {
 
     if (collapse.isCollapsed) {
         return (
-            <div className={`w-auto flex items-center justify-end pt-1 pl-1`}>
+            <div className="w-auto flex flex-col items-end gap-2 pt-1 pl-1">
+                <MapOutputActions
+                    onAnyPanelOpenChange={onActionsOpenChange}
+                    className="flex flex-col items-end gap-2 pointer-events-auto"
+                />
                 <Tooltip content={unifiedLayers.length > 0 ? 'Expandir capas activas' : 'No hay capas activas'}>
                     <button
                         onClick={collapse.handleExpand}
@@ -206,10 +210,11 @@ const ActiveLayersListInner = ({ onCollapseChange }) => {
     }
 
     return (
-        <div className="w-auto px-4.5 py-2 rounded-2xl bg-slate-50 shadow-lg flex-1 min-h-0 flex flex-col max-md:pointer-events-auto">
-            <div className="flex items-center justify-between shrink-0">
+        <div className="relative w-auto px-4.5 py-2 rounded-2xl bg-white shadow-lg flex-1 min-h-0 flex flex-col max-md:pointer-events-auto">
+            <MapOutputActions onAnyPanelOpenChange={onActionsOpenChange} />
+            <div className="flex items-center justify-between shrink-0 mb-3">
                 <div className="flex items-center gap-3">
-                    <Icon name="capa_activa" className="size-8" />
+                    <Icon name="capa_activa" className="size-8 text-primary" />
                     <h3 className="font-sans font-bold text-[18px]/[47px]">Capas Activas</h3>
                 </div>
 
@@ -275,10 +280,4 @@ const ActiveLayersListInner = ({ onCollapseChange }) => {
     );
 };
 
-const ActiveLayersList = (props) => (
-    <LegendsVisibilityProvider>
-        <ActiveLayersListInner {...props} />
-    </LegendsVisibilityProvider>
-);
-
-export default ActiveLayersList;
+export default ActiveLayersListInner;

@@ -10,18 +10,20 @@ const SYMBOLOGY_PANEL_ENABLED = false;
 const MapLayersPanels = () => {
     const [layersCollapsed, setLayersCollapsed] = useState(true);
     const [symbologyCollapsed, setSymbologyCollapsed] = useState(true);
+    const [actionsOpen, setActionsOpen] = useState(false);
     const handleLayersCollapse = useCallback((v) => setLayersCollapsed(v), []);
     const handleSymbologyCollapse = useCallback((v) => setSymbologyCollapsed(v), []);
     const isSlow = useSlowLoading(5000);
 
     const allCollapsed = layersCollapsed && (!SYMBOLOGY_PANEL_ENABLED || symbologyCollapsed);
+    const actionsPanelOpen = actionsOpen;
 
     return (
         <Panel
             variant="floating"
-            position={`top-27 right-4 z-10 ${allCollapsed ? 'max-md:z-9' : 'max-md:z-[23]'}`}
+            position={`top-4 right-4 ${allCollapsed ? '' : 'max-md:top-27'} ${actionsPanelOpen ? 'z-30' : 'z-10'} ${actionsPanelOpen ? 'max-md:z-60' : (allCollapsed ? 'max-md:z-9' : 'max-md:z-[23]')}`}
             width="w-[373px] max-md:w-[calc(100vw-2rem)]"
-            maxHeight="max-h-[calc(100vh-9.5rem)] max-md:max-h-[calc(100dvh-10rem)]"
+            maxHeight="max-h-[calc(100vh-4rem)] max-md:max-h-[calc(100dvh-10rem)]"
             flexDirection="flex-col"
             contentClassName="gap-4 overflow-visible"
             noPadding={true}
@@ -39,7 +41,7 @@ const MapLayersPanels = () => {
                     />
                 </div>
             )}
-            <ActiveLayersList onCollapseChange={handleLayersCollapse} />
+            <ActiveLayersList onCollapseChange={handleLayersCollapse} onActionsOpenChange={setActionsOpen} />
             {SYMBOLOGY_PANEL_ENABLED && <SymbologyPanel onCollapseChange={handleSymbologyCollapse} />}
         </Panel>
     );

@@ -14,7 +14,6 @@ import LayerBadge from '@mapsComponents/LayerBadge';
 import LayerDateControls from './LayerDateControls';
 import LayerActionsBar from './LayerActionsBar';
 import LayerInlineActions from './LayerInlineActions';
-import LayerLegendInline from './LayerLegendInline';
 import SlotBadge from './SlotBadge';
 import { computeLabel } from './datePillHelpers';
 import { ACTIVE_LAYERS_PANEL_WIDTH } from '@pages/maps/helpers/mapFit';
@@ -208,7 +207,7 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
             className={`
                 rounded-2xl border border-transparent hover:border-slate-100
                 transition-all hover:shadow-sm cursor-pointer overflow-hidden
-                ${isSelected ? 'bg-primary-soft ring-1 ring-primary-deep' : layer.visible ? 'bg-white' : 'bg-slate-100'}
+                ${isSelected ? 'bg-primary-soft ring-1 ring-primary-deep' : layer.visible ? 'bg-slate-50' : 'bg-slate-100'}
             `}
             onClick={handleClickOnLayer}
             onKeyDown={handleKeyActivate(handleClickOnLayer)}
@@ -303,11 +302,6 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
                                     onDownload={download.handleMenuDownload}
                                 />
                             )}
-                            <LayerLegendInline
-                                layer={layer}
-                                compareMode={compareMode}
-                                slotMembership={slotMembership}
-                            />
                         </>
                     )}
                 </div>
