@@ -13,9 +13,18 @@ export GID := $(shell id -g)
 
 NETWORK_NAME := mapamex-network
 
-# DEPLOY_MODE=build (default) compila desde fuente; DEPLOY_MODE=pull baja las
-# imagenes fijadas en .env.images (servidor sin codigo). Ver RUNBOOK-DEPLOY.md.
-DEPLOY_MODE ?= build
+# Modo de los targets `<servicio>-deploy` (produccion). Auto-detectado:
+#   - si existe .env.images (el servidor) -> usa esas imagenes (pull) y las carga solo.
+#   - si no (desarrollo local)            -> compila desde fuente.
+# `<servicio>-up` es desarrollo y no depende de esto. Override manual: DEPLOY_MODE=build|pull.
+# Ver RUNBOOK-DEPLOY.md.
+ifneq ($(wildcard .env.images),)
+  DEPLOY_MODE ?= pull
+  include .env.images
+  export CMS_API_IMAGE CMS_NGINX_IMAGE GATEWAY_NGINX_IMAGE VISOR_BACKEND_IMAGE VISOR_MCP_IMAGE
+else
+  DEPLOY_MODE ?= build
+endif
 COMPOSE_BUILD_FLAG := $(if $(filter pull,$(DEPLOY_MODE)),,--build)
 
 GATEWAY_DIR := ./gateway

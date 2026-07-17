@@ -55,6 +55,7 @@ services:
     environment:
       CMS_ENV_FILE: /run/secrets/cms_env
       STORAGE_USE_SSL: ${STORAGE_USE_SSL:-false}
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS}
       # Host público derivado de PUBLIC_ORIGIN (cms/.env.production). Va aquí
       # (no en el env montado) porque environment: SÍ interpola ${VAR} y tiene prioridad.
       CORS_ORIGINS: '["${PUBLIC_ORIGIN:?}"]'
