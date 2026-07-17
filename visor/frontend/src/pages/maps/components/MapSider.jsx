@@ -217,7 +217,7 @@ const MapSider = ({ className = '' }) => {
                 ref={siderRef}
                 className={[
                     'absolute top-4 left-4 z-20 max-md:z-22 flex flex-col',
-                    `max-h-[calc(100dvh-2rem)] bg-white shadow-lg ${isExpanded ? 'rounded-2xl' : 'rounded-full'} overflow-visible`,
+                    `max-h-[calc(100dvh-2rem)] bg-white shadow-lg ${isExpanded ? 'rounded-2xl' : 'rounded-[2.75rem]'} overflow-visible`,
                     'transition-all duration-500',
                     className,
                 ].join(' ')}
@@ -244,7 +244,7 @@ const MapSider = ({ className = '' }) => {
                         onClick={handleLogoClick}
                         tooltip={!treatAsMobile ? 'Ir al inicio' : ''}
                         tooltipPlacement='bottom'
-                        className={`shrink-0 flex justify-center overflow-hidden ${isExpanded ? 'rounded-2xl' : 'rounded-full'}`}
+                        className={`shrink-0 flex justify-center overflow-hidden transition-all duration-500 ${isExpanded ? 'rounded-2xl' : 'rounded-xl'}`}
                     />
                     <EnvBadge />
                     {!isMobile && (
