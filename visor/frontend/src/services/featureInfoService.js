@@ -86,7 +86,7 @@ const queryWMSGetFeatureInfo = async (baseUrl, layerGroups, map, coordinate, get
             X: Math.floor(pixel[0]).toString(),
             Y: Math.floor(pixel[1]).toString(),
             CQL_FILTER: cqlFilters.join(';'),
-            ENV: isInegiMode ? 'geom:geom_inegi' : 'geom:geom_mapamex',
+            ENV: isInegiMode ? 'geom:geom_inegi' : 'geom:geom_iieg',
             ...(timeValue ? { TIME: timeValue } : {})
         };
 
@@ -201,7 +201,7 @@ export const getFeaturesInPolygonForActiveLayers = async (activeLayers, map, pol
                 layerListMap[localName] = layerList;
 
                 let geomCol = geomColumns[typeName] || 'the_geom';
-                if (isInegiMode && geomCol === 'geom_mapamex') geomCol = 'geom_inegi';
+                if (isInegiMode && geomCol === 'geom_iieg') geomCol = 'geom_inegi';
 
                 const typeFilters = layerList.map(({ layer, wmsConfig }) => {
                     const dynamicFilter = getFilterFn ? getFilterFn(layer.id) : null;

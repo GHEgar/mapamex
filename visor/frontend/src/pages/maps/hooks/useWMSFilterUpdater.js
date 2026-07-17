@@ -21,7 +21,7 @@ export const useWMSFilterUpdater = ({ mapRef, wmsLayersRef, filters, getFilter, 
         if (!mapRef.current || !getFilter) return;
 
         const isInegiMode = activeLayerIdsRef.current.some(id => INEGI_LAYER_IDS.includes(id));
-        const envParam = isInegiMode ? 'geom:geom_inegi' : 'geom:geom_mapamex';
+        const envParam = isInegiMode ? 'geom:geom_inegi' : 'geom:geom_iieg';
         const ctx = municipioContextRef.current;
         const layersTree = layersRef.current;
 
