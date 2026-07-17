@@ -1,24 +1,27 @@
 import Tooltip from '@components/Tooltip';
+import { rgba } from '@constants/brand';
+
+const TRACK_TINT_ALPHA = 0.14;
 
 const Switch = ({ checked, indeterminate, onChange, disabled, className = '', onLabel, offLabel, onColor, offColor, tooltip }) => {
     const hasLabels = onLabel || offLabel;
+    const activeColor = !disabled && (checked ? onColor : offColor);
 
     const getTranslateClass = () => {
-        if (indeterminate) return 'translate-x-2';
-        return checked ? 'translate-x-3' : 'translate-x-1';
+        if (indeterminate) return 'translate-x-[9px]';
+        return checked ? 'translate-x-[18px]' : 'translate-x-0';
     };
 
-    const getBackgroundColor = () => {
-        if (disabled) return 'bg-gray-300';
+    const getTrackClass = () => {
+        if (disabled) return 'bg-slate-100';
+        if (indeterminate) return 'bg-secondary-soft';
+        return checked ? 'bg-primary-soft' : 'bg-slate-200';
+    };
+
+    const getKnobClass = () => {
+        if (disabled) return 'bg-slate-300';
         if (indeterminate) return 'bg-secondary';
-        return checked ? 'bg-[#5AD344]' : 'bg-white';
-    };
-
-    const getDotColor = () => {
-        if (disabled) return '#d1d5db';
-        if (checked && onColor) return onColor;
-        if (!checked && offColor) return offColor;
-        return undefined;
+        return checked ? 'bg-primary' : 'bg-slate-400';
     };
 
     const renderButtonWithLabels = (
@@ -33,17 +36,22 @@ const Switch = ({ checked, indeterminate, onChange, disabled, className = '', on
             }}
             className={`
                 inline-flex h-6 shrink-0 items-center rounded-full gap-0
-                transition-colors duration-200 ease-in-out bg-slate-100
+                transition duration-200 ease-in-out
+                ${activeColor ? '' : 'bg-slate-100'}
                 ${checked ? 'flex-row-reverse pl-1.5 pr-1' : 'flex-row pl-1 pr-1.5'}
-                ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer active:scale-95'}
                 ${className}
             `}
+            style={activeColor ? { backgroundColor: rgba(activeColor, TRACK_TINT_ALPHA) } : undefined}
         >
             <span
-                className="w-[18px] h-[18px] rounded-full shadow-[0px_3px_6px_#00000029] shrink-0 transition-colors duration-200 ease-in-out"
-                style={{ backgroundColor: getDotColor() || undefined }}
+                className={`size-4.5 rounded-full shrink-0 transition duration-200 ease-in-out ${activeColor ? '' : (disabled ? 'bg-slate-300' : 'bg-slate-400')}`}
+                style={activeColor ? { backgroundColor: activeColor } : undefined}
             />
-            <span className="text-[9px] font-sans font-bold text-graphite select-none px-1.5">
+            <span
+                className={`text-[9px] font-sans font-bold select-none px-1.5 ${activeColor ? '' : 'text-graphite'}`}
+                style={activeColor ? { color: activeColor } : undefined}
+            >
                 {checked ? onLabel : offLabel}
             </span>
         </button>
@@ -66,18 +74,23 @@ const Switch = ({ checked, indeterminate, onChange, disabled, className = '', on
                 }
             }}
             className={`
-                relative inline-flex h-5 w-7.5 shrink-0 items-center rounded-full
-                transition-colors duration-200 ease-in-out bg-slate-100
-                ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                relative inline-flex h-5 w-8.5 shrink-0 items-center rounded-full
+                transition duration-200 ease-in-out
+                ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer active:scale-95'}
                 ${className}
             `}
         >
             <span
                 className={`
-                    inline-block w-3.5 h-3.5 transform rounded-full
-                    shadow-[0px_3px_6px_#00000029]
-                    transition-transform duration-200 ease-in-out
-                    ${getTranslateClass()} ${getBackgroundColor()}
+                    absolute inset-x-0 top-1/2 h-1.25 -translate-y-1/2 rounded-full
+                    transition duration-200 ease-in-out ${getTrackClass()}
+                `}
+            />
+            <span
+                className={`
+                    relative inline-block size-4 rounded-full
+                    transition duration-200 ease-in-out
+                    ${getTranslateClass()} ${getKnobClass()}
                 `}
             />
         </button>

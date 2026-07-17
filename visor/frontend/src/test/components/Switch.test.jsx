@@ -48,27 +48,43 @@ describe('Switch - interacciones', () => {
 });
 
 describe('Switch - clases visuales', () => {
-    it('aplica clase de fondo verde cuando checked=true', () => {
+    it('pulgar primary y riel primary-soft cuando checked=true', () => {
         render(<Switch checked={true} onChange={vi.fn()} />);
-        const indicator = screen.getByRole('switch').querySelector('span');
-        expect(indicator.className).toContain('bg-[#5AD344]');
+        const [track, knob] = screen.getByRole('switch').querySelectorAll('span');
+        expect(track.className).toContain('bg-primary-soft');
+        expect(knob.className).toContain('bg-primary');
+        expect(knob.className).not.toContain('bg-primary-soft');
     });
 
-    it('aplica clase de fondo blanco cuando checked=false', () => {
+    it('pulgar slate-400 y riel slate-200 cuando checked=false', () => {
         render(<Switch checked={false} onChange={vi.fn()} />);
-        const indicator = screen.getByRole('switch').querySelector('span');
-        expect(indicator.className).toContain('bg-white');
+        const [track, knob] = screen.getByRole('switch').querySelectorAll('span');
+        expect(track.className).toContain('bg-slate-200');
+        expect(knob.className).toContain('bg-slate-400');
     });
 
-    it('aplica clase de fondo naranja cuando indeterminate=true', () => {
+    it('pulgar secondary y riel secondary-soft cuando indeterminate=true', () => {
         render(<Switch checked={false} indeterminate={true} onChange={vi.fn()} />);
-        const indicator = screen.getByRole('switch').querySelector('span');
-        expect(indicator.className).toContain('bg-secondary');
+        const [track, knob] = screen.getByRole('switch').querySelectorAll('span');
+        expect(track.className).toContain('bg-secondary-soft');
+        expect(knob.className).toContain('bg-secondary');
+        expect(knob.className).not.toContain('bg-secondary-soft');
     });
 
-    it('aplica clase de fondo gris cuando disabled=true', () => {
+    it('pulgar slate-300 y riel slate-100 cuando disabled=true', () => {
         render(<Switch checked={false} onChange={vi.fn()} disabled={true} />);
-        const indicator = screen.getByRole('switch').querySelector('span');
-        expect(indicator.className).toContain('bg-gray-300');
+        const [track, knob] = screen.getByRole('switch').querySelectorAll('span');
+        expect(track.className).toContain('bg-slate-100');
+        expect(knob.className).toContain('bg-slate-300');
+    });
+
+    it('con etiquetas usa el color del slot en pulgar, texto y track suave', () => {
+        render(<Switch checked={true} onChange={vi.fn()} onLabel="A" offLabel="B" onColor="#E11D74" offColor="#FB7185" />);
+        const button = screen.getByRole('switch');
+        const [knob, label] = button.querySelectorAll('span');
+        expect(button.style.backgroundColor).toBe('rgba(225, 29, 116, 0.14)');
+        expect(knob.style.backgroundColor).toBe('#E11D74');
+        expect(label.style.color).toBe('#E11D74');
+        expect(label.textContent).toBe('A');
     });
 });
