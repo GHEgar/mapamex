@@ -1,7 +1,9 @@
 import 'ol/ol.css';
 import { useEffect, useState } from 'react';
 import MapView from '@mapsComponents/MapView';
+import MapControls from '@mapsComponents/MapControls';
 import LayerNotices from '@mapsComponents/LayerNotices/LayerNotices';
+import { MAP_Z } from '@constants/mapLayers';
 import Loading from '@components/Loading';
 import EmbedError from '@pages/embed/EmbedError';
 import { fetchEmbedConfig } from '@services/embedService';
@@ -31,6 +33,9 @@ const EmbedInner = ({ params, config }) => {
     return (
         <div className="relative w-full h-dvh">
             <MapView />
+            <div className={`fixed bottom-4 left-4 ${MAP_Z.CONTROLS}`}>
+                <MapControls variant="compact" />
+            </div>
             <LayerNotices enabled={noticesEnabled} />
         </div>
     );

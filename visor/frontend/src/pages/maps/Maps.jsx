@@ -8,9 +8,8 @@ import MunicipioActiveChip from '@mapsComponents/MapExport/MunicipioActiveChip';
 import MapLayersPanels from '@mapsComponents/MapLayersPanels';
 import LayerDetailModal from './components/LayerDetailModal/LayerDetailModal';
 import InfoBox from './components/InfoBox/InfoBox';
-import MapControls from './components/MapControls';
+import MapBottomLeftStack from './components/MapBottomLeftStack';
 import MeasurementTools from './components/MeasurementTools/ToolsPanel';
-import ScaleLineControl from './components/ScaleLineControl';
 import MapAttribution from './components/MapAttribution';
 import MapLegend from './components/MapLegend';
 import LayerNotices from './components/LayerNotices/LayerNotices';
@@ -49,10 +48,9 @@ const Maps = () => {
                         <MapLayersPanels />
                         <LayerDetailModal />
                         <InfoBox />
-                        <ScaleLineControl />
                         <MapAttribution />
                         <MapLegend />
-                        <MapControls />
+                        <MapBottomLeftStack />
                         {!isComparing && <MeasurementTools />}
                         {isComparing ? <SwipeView /> : <MapView />}
                         {isComparing && <SwipeSlotControls />}
