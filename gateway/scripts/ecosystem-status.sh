@@ -79,14 +79,21 @@ get_docker_str() {
     return
   fi
 
-  local running=0 stopped=0 total=0
+  local running=0 stopped=0 unhealthy=0 total=0
   if command -v docker &>/dev/null; then
     local containers
-    containers=$(docker compose -f "$compose_file" ps --format '{{.State}}' 2>/dev/null || true)
+    containers=$(docker compose -f "$compose_file" ps --format '{{.State}}|{{.Health}}' 2>/dev/null || true)
     if [ -n "$containers" ]; then
-      while IFS= read -r state; do
+      while IFS= read -r line; do
+        local state="${line%%|*}"
+        local health="${line#*|}"
         total=$((total + 1))
-        [ "$state" = "running" ] && running=$((running + 1)) || stopped=$((stopped + 1))
+        if [ "$state" = "running" ]; then
+          running=$((running + 1))
+          [ "$health" = "unhealthy" ] && unhealthy=$((unhealthy + 1))
+        else
+          stopped=$((stopped + 1))
+        fi
       done <<< "$containers"
     fi
   fi
@@ -95,6 +102,8 @@ get_docker_str() {
     printf "${DIM}off${RESET}"
   elif [ "$stopped" -gt 0 ]; then
     printf "${GREEN}%d${RESET}/${DIM}%d${RESET} ${RED}%d down${RESET}" "$running" "$total" "$stopped"
+  elif [ "$unhealthy" -gt 0 ]; then
+    printf "${GREEN}%d${RESET}/${DIM}%d${RESET} ${RED}%d sick${RESET}" "$running" "$total" "$unhealthy"
   else
     printf "${GREEN}%d/%d${RESET}" "$running" "$total"
   fi

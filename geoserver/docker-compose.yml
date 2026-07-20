@@ -72,7 +72,14 @@ services:
       SEED_BOUNDS: ${GWC_SEED_BOUNDS}
       SEED_EXPIRE_CLIENTS: ${GWC_SEED_EXPIRE_CLIENTS}
       SEED_LAYERS_FILE: /seed/seed-layers.txt
+      SEED_STATUS_FILE: /tmp/seed-status
     entrypoint: ["/bin/sh", "-c", "cp /seed/seeder-crontab /etc/crontabs/root && /bin/sh /seed/seed-cache.sh; exec crond -f -l 8"]
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q '^ok$' /tmp/seed-status 2>/dev/null || exit 1"]
+      interval: 5m
+      timeout: 10s
+      retries: 2
+      start_period: 10m
     volumes:
       - ./scripts/seed-cache.sh:/seed/seed-cache.sh:ro
       - ./config/seeder-crontab:/seed/seeder-crontab:ro

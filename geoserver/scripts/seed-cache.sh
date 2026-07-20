@@ -10,6 +10,7 @@ BOUNDS="${SEED_BOUNDS:--11766470.18,2149050.11,-11295588.73,2601813.23}"
 EXPIRE_CLIENTS="${SEED_EXPIRE_CLIENTS:-86400}"
 SEED_LAYERS="${SEED_LAYERS:-general:curvas_de_nivel=11-15 raster:hillshade_mapamex_cog=6-14 raster:hillshade_inegi_cog=6-14}"
 SEED_LAYERS_FILE="${SEED_LAYERS_FILE:-}"
+STATUS_FILE="${SEED_STATUS_FILE:-/tmp/seed-status}"
 
 if [ -n "$SEED_LAYERS_FILE" ] && [ -f "$SEED_LAYERS_FILE" ]; then
   SEED_LAYERS="$SEED_LAYERS $(tr '\n' ' ' < "$SEED_LAYERS_FILE")"
@@ -27,7 +28,8 @@ wait_for_geoserver() {
   until http_code=$(curl -s -o /dev/null --max-time 10 -w "%{http_code}" -u "$AUTH" "$GEOSERVER_URL/gwc/rest/gridsets") && [ "$http_code" = "200" ]; do
     attempt=$((attempt + 1))
     if [ "$attempt" -ge "$max_attempts" ]; then
-      echo "GWC REST no respondio 200 despues de $((max_attempts * 5))s (ultimo code=$http_code)." >&2
+      echo "ERROR GWC REST no respondio 200 despues de $((max_attempts * 5))s (ultimo code=$http_code)." >&2
+      echo "fail:unreachable" > "$STATUS_FILE"
       exit 1
     fi
     sleep 5
@@ -52,6 +54,38 @@ build_payload() {
 EOF
 }
 
+ensure_tile_layer() {
+  layer="$1"
+  http_code=$(curl -s -o /dev/null --max-time 15 -u "$AUTH" -w "%{http_code}" \
+    "$GEOSERVER_URL/gwc/rest/layers/$layer.xml")
+  if [ "$http_code" = "200" ]; then
+    return 0
+  fi
+  payload=$(cat <<EOF
+<GeoServerLayer>
+  <enabled>true</enabled>
+  <inMemoryCached>true</inMemoryCached>
+  <name>$layer</name>
+  <mimeFormats><string>$FORMAT</string></mimeFormats>
+  <gridSubsets><gridSubset><gridSetName>$GRIDSET</gridSetName></gridSubset></gridSubsets>
+  <metaWidthHeight><int>4</int><int>4</int></metaWidthHeight>
+  <expireCache>0</expireCache>
+  <expireClients>$EXPIRE_CLIENTS</expireClients>
+  <gutter>0</gutter>
+</GeoServerLayer>
+EOF
+)
+  http_code=$(curl -s -o /dev/null --max-time 30 -w "%{http_code}" -u "$AUTH" \
+    -X PUT -H "Content-Type: application/xml" -d "$payload" \
+    "$GEOSERVER_URL/gwc/rest/layers/$layer.xml")
+  if [ "$http_code" = "200" ]; then
+    echo "WARN tile layer ausente, recreado: $layer ($GRIDSET)"
+    return 0
+  fi
+  echo "ERROR tile layer FALLO: $layer (http=$http_code)" >&2
+  return 1
+}
+
 ensure_expire_clients() {
   layer="$1"
   config=$(curl -s --max-time 15 -u "$AUTH" "$GEOSERVER_URL/gwc/rest/layers/$layer.xml")
@@ -67,7 +101,7 @@ ensure_expire_clients() {
   if [ "$http_code" = "200" ]; then
     echo "expireClients=$EXPIRE_CLIENTS aplicado: $layer"
   else
-    echo "expireClients FALLO: $layer (http=$http_code)" >&2
+    echo "ERROR expireClients FALLO: $layer (http=$http_code)" >&2
   fi
 }
 
@@ -79,6 +113,10 @@ for entry in $SEED_LAYERS; do
   zrange="${entry#*=}"
   zmin="${zrange%-*}"
   zmax="${zrange#*-}"
+  if ! ensure_tile_layer "$layer"; then
+    failures=$((failures + 1))
+    continue
+  fi
   ensure_expire_clients "$layer"
   payload=$(build_payload "$layer" "$zmin" "$zmax")
   http_code=$(curl -s -o /dev/null --max-time 30 -w "%{http_code}" -u "$AUTH" \
@@ -87,9 +125,16 @@ for entry in $SEED_LAYERS; do
   if [ "$http_code" = "200" ]; then
     echo "seed encolado: $layer z$zmin-$zmax ($GRIDSET)"
   else
-    echo "seed FALLO: $layer (http=$http_code)" >&2
+    echo "ERROR seed FALLO: $layer (http=$http_code)" >&2
     failures=$((failures + 1))
   fi
 done
+
+if [ "$failures" -eq 0 ]; then
+  echo "ok" > "$STATUS_FILE"
+else
+  echo "fail:$failures" > "$STATUS_FILE"
+  echo "ERROR seed finalizado con $failures fallos" >&2
+fi
 
 exit "$failures"
