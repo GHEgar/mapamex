@@ -57,7 +57,7 @@ const MunicipioFilterButton = ({ municipioMode, onOpenChange, collapsed = false 
                         'flex items-center justify-center relative',
                         showLabel ? 'w-full px-3' : 'w-12.5',
                         'h-12.5 rounded-full transition',
-                        'bg-primary/20 hover:bg-slate-200 text-primary',
+                        'bg-white hover:bg-slate-100 text-primary',
                         'font-sans font-bold text-[13px] hover:shadow-lg',
                         isActive ? 'ring ring-primary' : '',
                     ].join(' ')}
