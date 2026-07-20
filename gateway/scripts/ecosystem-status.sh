@@ -129,8 +129,16 @@ for dir in "${REPO_ORDER[@]}"; do
   total_repos=$((total_repos + 1))
 
   if [ ! -d "$dir/.git" ]; then
+    docker_str=$(get_docker_str "$dir")
+    docker_vis=$(echo -e "$docker_str" | sed 's/\x1b\[[0-9;]*m//g')
     printf "  %-${W_REPO}s " "$name"
-    center "no es repo" "$W_BRANCH" "${YELLOW}no es repo${RESET}"
+    center "monorepo" "$W_BRANCH" "${DIM}monorepo${RESET}"
+    printf " "
+    center "" "$W_CHANGES" ""
+    printf " "
+    center "" "$W_REMOTE" ""
+    printf " "
+    center "$docker_vis" "$W_DOCKER" "$docker_str"
     echo ""
     total_not_repo=$((total_not_repo + 1))
     continue
