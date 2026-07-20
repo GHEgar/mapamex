@@ -25,6 +25,7 @@ import MenuItem from './MenuItem';
 import SiderModeButton from './SiderModeButton';
 import EnvBadge from './EnvBadge';
 import EventoFunButton from './EventoFunButton';
+import { MAP_Z, MAP_Z_MOBILE } from '@constants/mapLayers';
 
 const SIDER_EVENTS_ENABLED = false;
 const EMPTY_EVENTOS = Object.freeze([]);
@@ -216,7 +217,7 @@ const MapSider = ({ className = '' }) => {
             <aside
                 ref={siderRef}
                 className={[
-                    'absolute top-4 left-4 z-20 max-md:z-22 flex flex-col',
+                    `absolute top-4 left-4 ${MAP_Z.PANELS} ${MAP_Z_MOBILE.PANELS} flex flex-col`,
                     `max-h-[calc(100dvh-2rem)] bg-white shadow-lg ${isExpanded ? 'rounded-2xl' : 'rounded-[2.75rem]'} overflow-visible`,
                     'transition-all duration-500',
                     className,

@@ -3,10 +3,11 @@ import { useMapsContext } from '@hooks/useMaps';
 import { useWMSLegend } from '@hooksMaps/useWMSLegend';
 import { useLegendsVisibility } from './ActiveLayers/hooks/useLegendsVisibility';
 import { HIDDEN_SCROLLBAR } from '@constants/global';
+import { MAP_Z } from '@constants/mapLayers';
 import Logo from '@components/Logo';
 import Icon from '@components/Icon';
 
-const POSITION = 'fixed z-10 right-4 bottom-20 md:bottom-9 w-[calc(100vw-2rem)] md:w-[373px]';
+const POSITION = `fixed ${MAP_Z.BASE} right-4 bottom-20 md:bottom-9 w-[calc(100vw-2rem)] md:w-[373px]`;
 
 const LegendImage = ({ src, alt }) => {
     const [hasError, setHasError] = useState(false);

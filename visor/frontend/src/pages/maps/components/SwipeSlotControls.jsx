@@ -8,6 +8,7 @@ import { findLayerDef } from '@pages/maps/helpers/wmsConfig';
 import { SWIPE_HANDLE_COLOR } from '@pages/maps/helpers/swipeTheme';
 import DatePill from './ActiveLayers/DatePill';
 import { computeLabel } from './ActiveLayers/datePillHelpers';
+import { MAP_Z } from '@constants/mapLayers';
 
 const ActionsHint = ({ visible }) => (
     <div
@@ -85,7 +86,7 @@ const SwipeSlotControls = () => {
 
     return (
         <div
-            className={`fixed z-20 flex flex-col items-center gap-2 ${isMobileSider ? 'bottom-16' : 'bottom-4'}`}
+            className={`fixed ${MAP_Z.PANELS} flex flex-col items-center gap-2 ${isMobileSider ? 'bottom-16' : 'bottom-4'}`}
             style={{ left: `calc(50% + ${siderShift}px)`, transform: 'translateX(-50%)' }}
         >
             {hasDates && closeBtn}

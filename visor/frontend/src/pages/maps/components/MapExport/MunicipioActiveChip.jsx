@@ -3,6 +3,7 @@ import Icon from '@components/Icon';
 import Tooltip from '@components/Tooltip';
 import { useMapsContext } from '@hooks/useMaps';
 import { SCOPE_TYPES } from '@pages/maps/hooks/useMunicipioMode';
+import { MAP_Z } from '@constants/mapLayers';
 
 const IS_NON_PROD = ['dev', 'beta'].includes(import.meta.env.VITE_APP_ENV);
 
@@ -16,7 +17,7 @@ const MunicipioActiveChip = () => {
     const displayLabel = scope.type === SCOPE_TYPES.ZMG ? 'ZMG' : scopeLabel;
 
     return (
-        <div className="hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 z-11 max-w-[60vw] items-center gap-2">
+        <div className={`hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 ${MAP_Z.CONTROLS} max-w-[60vw] items-center gap-2`}>
             <Tooltip content={`Click para centrar en ${displayLabel}`} placement="bottom" delay={300}>
                 <button
                     type="button"

@@ -15,6 +15,7 @@ import { EXPORT_DIMENSIONS, QUALITY_PRESETS } from './utils/exportDimensions';
 import { getLayersSources } from '@services/layerMetadataService';
 import Logo from '@components/Logo';
 import Icon from '@components/Icon';
+import { MAP_Z } from '@constants/mapLayers';
 
 const ExportPreview = ({ isOpen, onClose, format = 'png', selectedLegends: propSelectedLegends = [], initialTitle = '', quality = QUALITY_PRESETS[1], swipeOptions = null }) => {
     const { targetRef, compareMode } = useMapsContext();
@@ -177,7 +178,7 @@ const ExportPreview = ({ isOpen, onClose, format = 'png', selectedLegends: propS
             />
 
             {showModal && createPortal(
-                <div className="fixed inset-0 bg-black/80 z-[9999] flex flex-col items-center justify-center p-4 gap-6">
+                <div className={`fixed inset-0 bg-black/80 ${MAP_Z.MODALS} flex flex-col items-center justify-center p-4 gap-6`}>
                     <div
                         ref={containerRef}
                         className="relative flex flex-col max-w-[85vw] max-h-[85vh]"

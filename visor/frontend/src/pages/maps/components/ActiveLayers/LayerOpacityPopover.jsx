@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Bar from '@components/Bar';
 import { trackOpacityChange } from '@services/analyticsService';
+import { MAP_Z } from '@constants/mapLayers';
 
 const POPOVER_WIDTH = 220;
 const VIEWPORT_MARGIN = 8;
@@ -78,7 +79,7 @@ const LayerOpacityPopover = ({ anchorRef, value, onChange, onClose, layerId }) =
     return createPortal(
         <div
             ref={ref}
-            className="fixed z-[9999] bg-white rounded-2xl shadow-[0px_3px_24px_#00000029] px-3 py-2.5"
+            className={`fixed ${MAP_Z.POPOVERS} bg-white rounded-2xl shadow-[0px_3px_24px_#00000029] px-3 py-2.5`}
             style={{ top: position.top, left: position.left, width: POPOVER_WIDTH }}
         >
             <Bar

@@ -13,6 +13,7 @@ import BannerNotice from './BannerNotice';
 import SwipeUpWrapper from './SwipeUpWrapper';
 import NoticeArrow from './NoticeArrow';
 import NoticeMessage from './NoticeMessage';
+import { MAP_Z } from '@constants/mapLayers';
 
 const MOBILE_VISIBLE_LIMIT = 2;
 
@@ -136,7 +137,7 @@ const LayerNotices = ({ enabled = true }) => {
                 return (
                     <div
                         key={position}
-                        className={`absolute z-40 md:z-15 flex flex-col gap-2 pointer-events-none ${positionToContainerClasses(position)}`}
+                        className={`absolute ${MAP_Z.NOTICES} flex flex-col gap-2 pointer-events-none ${positionToContainerClasses(position)}`}
                     >
                         {visible.map(({ layerId, notice }) => {
                             const variant = notice.variant || 'info';
