@@ -199,9 +199,9 @@ const ActiveLayersListInner = ({ onCollapseChange, onActionsOpenChange }) => {
                 <Tooltip content={unifiedLayers.length > 0 ? 'Expandir capas activas' : 'No hay capas activas'}>
                     <button
                         onClick={collapse.handleExpand}
-                        className="size-12.5 flex items-center justify-center bg-slate-100 rounded-full transition-colors relative hover:bg-primary-soft hover:border-primary hover:border cursor-pointer max-md:pointer-events-auto"
+                        className="group size-12.5 flex items-center justify-center bg-primary-soft rounded-full transition-colors relative hover:bg-primary-deep hover:shadow-lg cursor-pointer max-md:pointer-events-auto"
                     >
-                        <Icon name="capa_activa" className="size-10" />
+                        <Icon name="capa_activa" className="size-6 text-primary group-hover:text-white" />
                         <Badge visible={unifiedLayers.length > 0} count={unifiedLayers.length} className="absolute -top-1 -left-1" />
                     </button>
                 </Tooltip>

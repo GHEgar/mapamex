@@ -154,7 +154,7 @@ const Download = ({ onOpenPreview, onOpenChange, collapsed = false, expanded = f
                     disabled={!canDownload || isDownloading}
                     className={[
                         'flex items-center justify-center whitespace-nowrap',
-                        'text-center h-12.5 rounded-2xl transition',
+                        'text-center h-12.5 rounded-full transition',
                         collapsed || isMobile ? 'w-12.5' : (expanded ? 'w-12.5 md:w-auto md:px-6' : 'w-12.5 md:w-30'),
                         'font-sans font-bold text-sm hover:shadow-lg',
                         canDownload ? 'bg-primary-deep text-white hover:bg-primary' : 'bg-black/5 text-black/40 cursor-not-allowed',
