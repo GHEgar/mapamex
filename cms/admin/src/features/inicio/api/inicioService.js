@@ -9,3 +9,8 @@ export const getBorradoresPendientes = async () => {
     const res = await api.get('/borradores/pendientes');
     return res.data;
 };
+
+export const getTileCacheStatus = async () => {
+    const res = await api.get('/geoserver/tile-cache-status');
+    return res.data;
+};

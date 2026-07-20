@@ -36,6 +36,9 @@ class GeoServerClient:
     def _ows_url(self, path: str = "ows") -> str:
         return f"{self._base_url}/{path.lstrip('/')}"
 
+    def _gwc_url(self, path: str) -> str:
+        return f"{self._base_url}/gwc/rest/{path.lstrip('/')}"
+
     def _client(self) -> httpx.Client:
         return httpx.Client(
             auth=self._auth,
@@ -54,6 +57,16 @@ class GeoServerClient:
             return []
         workspaces = node.get("workspace", []) or []
         return [w["name"] for w in workspaces]
+
+    def list_gwc_tile_layers(self) -> set[str]:
+        url = self._gwc_url("layers.json")
+        with self._client() as c:
+            r = c.get(url)
+            r.raise_for_status()
+            data = r.json()
+        if not isinstance(data, list):
+            return set()
+        return {name for name in data if isinstance(name, str)}
 
     def list_layers(self, workspace: str) -> list[str]:
         url = self._rest_url(f"workspaces/{workspace}/layers.json")

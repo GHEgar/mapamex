@@ -10,7 +10,7 @@ from app.api.deps import require_project_access, require_role, verify_csrf
 from app.api.metrics import COUNTER_GEOSERVER_CALLS, incr
 from app.api.rate_limit import rate_limit
 from app.core.database import get_database_db
-from app.models.layer import Workspace
+from app.models.layer import Layer, Workspace
 from app.models.user import Usuario
 from app.schemas.geoserver_file import (
     GeoServerBrowseResponse,
@@ -777,3 +777,50 @@ async def delete_geoserver_file(
     if not deleted:
         base = f"workspaces/{clean_ws}/styles" if clean_ws else "styles"
         raise HTTPException(status_code=404, detail=f"Recurso no existe: {base}/{name}")
+
+
+@router.get('/tile-cache-status')
+async def tile_cache_status(
+    db: Session = Depends(get_database_db),
+    current_user: Usuario = Depends(_require_admin),
+    _rl: Usuario = Depends(_read_rate_limit),
+):
+    incr(COUNTER_GEOSERVER_CALLS)
+    rows = (
+        db.query(Layer.label, Workspace.geoserver_workspace, Layer.geoserver_layer)
+        .join(Workspace, Layer.workspace_alias == Workspace.alias)
+        .filter(
+            Layer.tiled.is_(True),
+            Layer.disabled.is_(False),
+            Layer.geoserver_layer.isnot(None),
+            Layer.cql_filter == '',
+            Layer.time_enabled.is_(False),
+        )
+        .all()
+    )
+
+    expected: dict[str, str] = {}
+    for label, ws, name in rows:
+        expected.setdefault(f'{ws}:{name}', label)
+
+    client = GeoServerClient()
+    try:
+        cached = client.list_gwc_tile_layers()
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f'GWC no responde: {exc}')
+
+    missing = sorted(
+        (
+            {'label': label, 'layer': layer}
+            for layer, label in expected.items()
+            if layer not in cached
+        ),
+        key=lambda item: item['layer'],
+    )
+
+    return {
+        'expected': len(expected),
+        'cached': len(expected) - len(missing),
+        'missing_count': len(missing),
+        'missing': missing[:50],
+    }

@@ -9,6 +9,7 @@ import { useAuth } from '@shared/contexts/useAuth';
 import {
     getMisBorradores,
     getBorradoresPendientes,
+    getTileCacheStatus,
 } from '@features/inicio/api/inicioService';
 import { VisorInicioHighlights } from '@features/visor-stats';
 
@@ -44,6 +45,7 @@ export default function InicioPage() {
     const [misBorradores, setMisBorradores] = useState([]);
     const [pendientes, setPendientes] = useState([]);
     const [loadingBorradores, setLoadingBorradores] = useState(true);
+    const [tileCache, setTileCache] = useState(null);
     const isAdmin = user?.role === 'tetlamamakani';
 
     useEffect(() => {
@@ -60,6 +62,15 @@ export default function InicioPage() {
             .catch(() => {})
             .finally(() => { if (!cancelled) setLoadingBorradores(false); });
 
+        return () => { cancelled = true; };
+    }, [isAdmin]);
+
+    useEffect(() => {
+        if (!isAdmin) return undefined;
+        let cancelled = false;
+        getTileCacheStatus()
+            .then((data) => { if (!cancelled) setTileCache(data); })
+            .catch(() => {});
         return () => { cancelled = true; };
     }, [isAdmin]);
 
@@ -123,6 +134,26 @@ export default function InicioPage() {
                         showIcon
                         message={`Tienes ${rechazados.length} borrador${rechazados.length === 1 ? '' : 'es'} rechazado${rechazados.length === 1 ? '' : 's'}`}
                         description="Revísalos y aplícales los cambios solicitados antes de volver a enviar a revisión."
+                    />
+                )}
+
+                {isAdmin && tileCache?.missing_count > 0 && (
+                    <Alert closable
+                        type="warning"
+                        showIcon
+                        message={`${tileCache.missing_count} de ${tileCache.expected} capas con caché de tiles marcado no están registradas en GeoServer`}
+                        description={
+                            <Space orientation="vertical" size={4}>
+                                <Text>
+                                    Esas capas se dibujan sin caché, más lento de lo esperado. El seeder
+                                    intentará recrearlas en su próxima corrida nocturna.
+                                </Text>
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                    {tileCache.missing.slice(0, 5).map((m) => m.layer).join(' · ')}
+                                    {tileCache.missing_count > 5 ? ` y ${tileCache.missing_count - 5} más` : ''}
+                                </Text>
+                            </Space>
+                        }
                     />
                 )}
 
