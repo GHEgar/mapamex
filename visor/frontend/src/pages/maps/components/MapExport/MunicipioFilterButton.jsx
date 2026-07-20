@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import Panel from '@components/Panel';
 import Tooltip from '@components/Tooltip';
+import Icon from '@components/Icon';
 import { useSider } from '@contexts/SiderContext';
 import { trackMunicipioPanelOpen } from '@services/analyticsService';
 import { SCOPE_TYPES } from '@pages/maps/hooks/useMunicipioMode';
@@ -8,12 +9,21 @@ import MunicipioFilterPanel from './MunicipioFilterPanel';
 
 const IS_NON_PROD = ['dev', 'beta'].includes(import.meta.env.VITE_APP_ENV);
 
-const buildLabel = (municipioMode) => {
+const scopeText = (municipioMode) => {
     const { active, scope, scopeLabel } = municipioMode;
-    if (!active || !scope?.type) return 'Jalisco';
+    if (!active || !scope?.type) return null;
     if (scope.type === SCOPE_TYPES.ZMG) return 'ZMG';
     if (scope.type === SCOPE_TYPES.REGION) return scope.value || 'Región';
-    return scopeLabel || 'Jalisco';
+    return scopeLabel || null;
+};
+
+const buildLabel = (municipioMode) => scopeText(municipioMode) || 'Ámbito';
+
+const buildShort = (municipioMode) => {
+    const text = scopeText(municipioMode);
+    if (!text) return null;
+    if (text === 'ZMG') return 'ZMG';
+    return text.slice(0, 3).toUpperCase();
 };
 
 const MunicipioFilterButton = ({ municipioMode, onOpenChange, collapsed = false }) => {
@@ -32,6 +42,7 @@ const MunicipioFilterButton = ({ municipioMode, onOpenChange, collapsed = false 
     };
 
     const label = buildLabel(municipioMode);
+    const shortText = buildShort(municipioMode);
     const isActive = !!municipioMode.scope?.type && municipioMode.active;
     const showLabel = !isMobile && !collapsed;
 
@@ -45,7 +56,7 @@ const MunicipioFilterButton = ({ municipioMode, onOpenChange, collapsed = false 
                     className={[
                         'flex items-center justify-center relative',
                         showLabel ? 'w-full px-3' : 'w-12.5',
-                        'h-12.5 rounded-2xl transition',
+                        'h-12.5 rounded-full transition',
                         'bg-primary/20 hover:bg-slate-200 text-primary',
                         'font-sans font-bold text-[13px] hover:shadow-lg',
                         isActive ? 'ring ring-primary' : '',
@@ -54,8 +65,10 @@ const MunicipioFilterButton = ({ municipioMode, onOpenChange, collapsed = false 
                 >
                     {showLabel ? (
                         <span className="truncate w-full text-center">{label}</span>
+                    ) : shortText ? (
+                        <span className="text-[10px] font-bold">{shortText}</span>
                     ) : (
-                        <span className="text-[10px] font-bold">JAL</span>
+                        <Icon name="center_group" className="size-6 text-primary" />
                     )}
                     <span
                         className={[
