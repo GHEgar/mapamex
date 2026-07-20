@@ -34,8 +34,6 @@ export const useScaleLineControl = (getMapInstance, containerRef) => {
         const scaleLine = new ScaleLine({
             target: containerRef.current,
             units: 'metric',
-            bar: true,
-            text: true,
             minWidth: 150
         });
 

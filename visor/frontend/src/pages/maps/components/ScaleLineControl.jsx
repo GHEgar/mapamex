@@ -1,11 +1,9 @@
 import { useCallback, useRef } from 'react';
 import { useMapsContext } from '@hooks/useMaps';
-import { useSiderAdaptivePosition } from '@contexts/SiderContext';
 import { useScaleLineControl } from '@hooksMaps/useScaleLineControl';
 
 const ScaleLineControl = () => {
     const { mapRef, compareMode, paneMapInstances } = useMapsContext();
-    const { style, className } = useSiderAdaptivePosition({ bottomOffset: 40 });
     const containerRef = useRef(null);
     const isSwipe = !!compareMode?.active;
 
@@ -17,18 +15,16 @@ const ScaleLineControl = () => {
     useScaleLineControl(getMapInstance, containerRef);
 
     return (
-        <div
-            ref={containerRef}
-            className={`fixed bottom-1 z-10 ${className}`}
-            style={style}
-        >
+        <div ref={containerRef}>
             <style>{`
-                .ol-scale-line {
-                    background: rgba(255, 255, 255, 0.8);
-                    backdrop-filter: blur(4px);
-                    padding: 4px 8px;
-                    border-radius: 0.75rem;
-                    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+                .ol-scale-line,
+                .ol-scale-bar {
+                    position: relative;
+                    bottom: auto;
+                    left: auto;
+                    background: transparent;
+                    box-shadow: none;
+                    padding: 0;
                     font-size: 10px;
                     line-height: 1;
                 }
@@ -40,6 +36,8 @@ const ScaleLineControl = () => {
                     font-size: 10px;
                     text-align: center;
                     margin: 1px;
+                    padding-bottom: 2px;
+                    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
                     will-change: contents, width;
                 }
             `}</style>
