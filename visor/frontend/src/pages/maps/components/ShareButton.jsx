@@ -144,8 +144,8 @@ const ShareButton = ({ onOpenChange }) => {
                     : generating
                         ? 'bg-primary-deep'
                         : isHovered
-                            ? 'bg-primary-deep'
-                            : 'bg-primary-soft hover:shadow-lg';
+                            ? 'bg-slate-100 shadow-lg'
+                            : 'bg-white';
 
     const iconNode = error
         ? <Icon name="alert_triangle" className="size-6" />
@@ -156,7 +156,7 @@ const ShareButton = ({ onOpenChange }) => {
                 : (
                     <Icon
                         name="copie"
-                        className={`size-6 ${(isHovered || generating) && !isModifiedFromShare ? 'text-white' : 'text-primary'}`}
+                        className={`size-6 ${generating && !isModifiedFromShare ? 'text-white' : 'text-primary'}`}
                     />
                 );
 
