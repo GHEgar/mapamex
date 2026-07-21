@@ -70,34 +70,31 @@ const SearchMenu = ({ onToggleLayer, activeLayerIds = [], closeButton }) => {
 
 
     return (
-        <div className={`pt-6 ${selectedLayers.length > 0 ? 'pb-2' : 'pb-6'} px-4 w-full ${HIDDEN_SCROLLBAR}`}>
-            <div className="flex items-center justify-between">
-                <h3 className="block text-[18px]/[47px] font-sans font-bold mb-2 text-primary tracking-normal">
+        <div className={`py-5 px-4 w-full ${HIDDEN_SCROLLBAR}`}>
+            <div className="flex items-center justify-between min-h-8 mb-3">
+                <h3 className="font-sans font-bold text-[15px]/[20px] text-numeralia tracking-normal">
                     Buscador
                 </h3>
                 {closeButton}
             </div>
             <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+                    {isLoading
+                        ? <Loading visible={true} size="size-5" border="border-2" />
+                        : <Icon name="search" className="size-5 text-graphite" />}
+                </span>
                 <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="¿Qué quieres buscar?"
                     className="
-                        w-full py-4 pl-4 border-none bg-slate-100 rounded-2xl
-                        text-[13px]/[19px] text-primary font-sans font-normal tracking-normal
-                        placeholder:text-[#191919] placeholder:font-sans placeholder:font-normal placeholder:text-[13px]/[19px]
-                        focus:outline-primary transition-colors
+                        w-full py-3.5 pl-12 pr-4 border-none bg-slate-100 rounded-full
+                        text-[13px]/[19px] text-numeralia font-sans font-normal tracking-normal
+                        placeholder:text-graphite placeholder:font-normal
+                        focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/25 transition-colors
                     "
                 />
-                <button
-                    className="
-                        absolute right-0 top-1/2 -translate-y-1/2 h-full w-[51px]
-                        bg-primary-deep rounded-r-2xl flex items-center justify-center
-                    "
-                >
-                    {isLoading ? <Loading visible={true} size="w-5 h-5" border="border-2" color="border-white" /> : <Icon name="searchInput" className="size-7 text-white" />}
-                </button>
             </div>
 
             {debouncedQuery && !isLoading && selectedLayers.length === 0 && (
@@ -105,14 +102,14 @@ const SearchMenu = ({ onToggleLayer, activeLayerIds = [], closeButton }) => {
                     <p className="text-[13px]/[19px] font-sans font-medium text-graphite">
                         No se encontraron resultados para <span className="font-bold text-primary">"{debouncedQuery}"</span>
                     </p>
-                    <p className="text-[11px]/[16px] font-sans font-normal text-[#6E7477] mt-1">
+                    <p className="text-[11px]/[16px] font-sans font-normal text-graphite mt-1">
                         Intenta con otro término de búsqueda
                     </p>
                 </div>
             )}
 
             {selectedLayers.length > 0 && (
-                <div className="relative mt-6 bg-white rounded-2xl p-2">
+                <div className="relative mt-4">
                     <ScrollContainer className="max-h-100 space-y-3">
                         {(() => {
                             const grouped = {};
@@ -141,7 +138,7 @@ const SearchMenu = ({ onToggleLayer, activeLayerIds = [], closeButton }) => {
 
                             return Object.entries(grouped).map(([groupKey, group]) => (
                                 <div key={groupKey} className="space-y-1">
-                                    <div className="text-[10px]/[11px] font-sans font-normal tracking-normal text-graphite px-1">
+                                    <div className="text-[10px]/[14px] font-sans font-semibold tracking-normal text-graphite px-2">
                                         {group.temaLabel} / {group.subtemaLabel}
                                     </div>
                                     <div className="space-y-0.5">
@@ -151,19 +148,14 @@ const SearchMenu = ({ onToggleLayer, activeLayerIds = [], closeButton }) => {
                                                 <button
                                                     key={layer.id}
                                                     onClick={() => handleLayerClick(layer.id)}
-                                                    className={`
-                                                        w-full flex items-center justify-start gap-3 px-2 py-1.5 rounded-2xl transition-all group cursor-pointer
-                                                        hover:bg-secondary/10
-                                                    `}
+                                                    aria-pressed={isActive}
+                                                    className="w-full flex items-center justify-start gap-3 px-2 py-2 rounded-2xl transition-colors group cursor-pointer hover:bg-slate-100"
                                                 >
-                                                    <span className={`flex items-center justify-center w-3.5 h-3.5 rounded-2xl shrink-0 transition-colors ${isActive ? 'bg-primary-deep' : 'bg-slate-100'}`}>
-                                                        <Icon name="check" className="w-2.5 h-2.5 text-white" visible={isActive} />
+                                                    <span className={`flex items-center justify-center size-4.5 rounded-full shrink-0 border-2 transition-colors ${isActive ? 'bg-primary-deep border-primary-deep' : 'bg-white border-slate-300'}`}>
+                                                        <Icon name="check" className="size-2.5 text-white" visible={isActive} />
                                                     </span>
                                                     <span
-                                                        className={`
-                                                            text-[13px]/[19px] font-sans font-normal text-left tracking-normal inline-flex items-center gap-1.5 flex-wrap
-                                                            ${isActive ? 'text-primary font-bold' : 'text-[#454545] group-hover:text-primary'
-                                                }`}
+                                                        className={`text-[13px]/[19px] font-sans text-left tracking-normal inline-flex items-center gap-1.5 flex-wrap ${isActive ? 'text-primary font-bold' : 'text-numeralia font-medium group-hover:text-primary'}`}
                                                     >
                                                         {layer.label}
                                                         <LayerBadge badge={layerIndex.get(layer.id)?.badge} />

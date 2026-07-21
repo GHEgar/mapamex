@@ -4,7 +4,7 @@ import SymbologyPanel from './SymbologyPanel';
 import Panel from '@components/Panel';
 import Message from '@components/Message';
 import { useSlowLoading } from '@hooks/useSlowLoading';
-import { MAP_Z, MAP_Z_MOBILE } from '@constants/mapLayers';
+import { MAP_Z } from '@constants/mapLayers';
 
 const SYMBOLOGY_PANEL_ENABLED = false;
 
@@ -22,7 +22,7 @@ const MapLayersPanels = () => {
     return (
         <Panel
             variant="floating"
-            position={`top-4 right-4 ${allCollapsed ? '' : 'max-md:top-27'} ${actionsPanelOpen ? MAP_Z.PANELS : MAP_Z.BASE} ${actionsPanelOpen ? MAP_Z_MOBILE.MODALS : (allCollapsed ? 'max-md:z-9' : 'max-md:z-[23]')}`}
+            position={`top-4 right-4 ${allCollapsed ? '' : 'max-md:top-27'} ${actionsPanelOpen ? MAP_Z.PANELS : MAP_Z.BASE} ${actionsPanelOpen ? 'max-md:z-[25]' : (allCollapsed ? 'max-md:z-9' : 'max-md:z-[23]')}`}
             width="w-[373px] max-md:w-[calc(100vw-2rem)]"
             maxHeight="max-h-[calc(100vh-4rem)] max-md:max-h-[calc(100dvh-10rem)]"
             flexDirection="flex-col"

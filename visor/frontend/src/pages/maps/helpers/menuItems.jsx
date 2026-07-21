@@ -28,12 +28,37 @@ const THEME_ICON_MAP = {
     'Mundial': 'mundial',
 };
 
-const MenuButton = ({ icon, imageUrl, label, isHovered, hasActiveLayers = false, isMenuOpen = false, categoryId = null, iconOverrides = null, hasUnseenBadge = false }) => {
+const MenuButton = ({ icon, imageUrl, label, isHovered, hasActiveLayers = false, isMenuOpen = false, categoryId = null, iconOverrides = null, hasUnseenBadge = false, isRow = false }) => {
     const [isHovering, setIsHovering] = useState(false);
 
     const iconName = categoryId || icon;
     const iconState = (hasActiveLayers || isHovering || isMenuOpen) ? 'hover' : 'normal';
     const stateImageUrl = iconOverrides?.[iconState] || imageUrl;
+    const isActiveText = hasActiveLayers || isHovering || isMenuOpen;
+
+    if (isRow) {
+        return (
+            <div
+                className={`flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl transition-colors duration-300 hover:bg-black/5 ${isMenuOpen ? 'bg-primary-deep/10' : ''}`}
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+            >
+                <span className="relative inline-flex shrink-0">
+                    {stateImageUrl ? (
+                        <img src={stateImageUrl} alt={label || ''} className="size-7 shrink-0 object-contain" />
+                    ) : (
+                        <Icon name={iconName} state={iconState} className="size-7 shrink-0" />
+                    )}
+                    {hasUnseenBadge && (
+                        <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-secondary ring-2 ring-white" />
+                    )}
+                </span>
+                <span className={`w-full text-[11px]/[14px] font-sans text-center truncate ${isActiveText ? 'font-bold text-primary' : 'font-medium text-graphite'}`}>
+                    {label}
+                </span>
+            </div>
+        );
+    }
 
     return (
         <div
@@ -76,11 +101,12 @@ const MenuButton = ({ icon, imageUrl, label, isHovered, hasActiveLayers = false,
     );
 };
 
-const createBaseItems = ({ isHovered, activeLayerIds, onToggleLayer, toggleMeasurementTools, toggleAnnotationTools, toolsButtonRef, areMeasurementToolsVisible, areAnnotationToolsVisible }) => [
+const createBaseItems = ({ isHovered, activeLayerIds, onToggleLayer, toggleMeasurementTools, toggleAnnotationTools, toolsButtonRef, areMeasurementToolsVisible, areAnnotationToolsVisible, baseRow = false, trioRowRef = null }) => [
     {
         id: 'search',
         hasMenu: true,
         tooltip: 'Buscador por capas',
+        panelPositionAnchorRef: baseRow ? trioRowRef : null,
         menuContent: ({ closeButton } = {}) => <SearchMenu onToggleLayer={onToggleLayer} activeLayerIds={activeLayerIds} closeButton={closeButton} />,
         renderComponent: ({ isMenuOpen }) => (
             <MenuButton
@@ -88,12 +114,14 @@ const createBaseItems = ({ isHovered, activeLayerIds, onToggleLayer, toggleMeasu
                 label="Buscador"
                 isHovered={isHovered}
                 isMenuOpen={isMenuOpen}
+                isRow={baseRow}
             />
         )
     }, {
         id: 'tools',
         hasMenu: true,
         tooltip: 'Herramientas',
+        panelPositionAnchorRef: baseRow ? trioRowRef : null,
         ref: toolsButtonRef,
         menuContent: ({ close, closeButton } = {}) => (
             <ToolsMenu
@@ -112,12 +140,14 @@ const createBaseItems = ({ isHovered, activeLayerIds, onToggleLayer, toggleMeasu
                 isHovered={isHovered}
                 hasActiveLayers={areMeasurementToolsVisible}
                 isMenuOpen={isMenuOpen}
+                isRow={baseRow}
             />
         )
     }, {
         id: 'basemaps',
         hasMenu: true,
         tooltip: 'Mapas Base',
+        panelPositionAnchorRef: baseRow ? trioRowRef : null,
         menuContent: ({ closeButton } = {}) => <BaseMapList closeButton={closeButton} />,
         renderComponent: ({ isMenuOpen }) => (
             <MenuButton
@@ -125,6 +155,7 @@ const createBaseItems = ({ isHovered, activeLayerIds, onToggleLayer, toggleMeasu
                 label="Mapas base"
                 isHovered={isHovered}
                 isMenuOpen={isMenuOpen}
+                isRow={baseRow}
             />
         )
     }

@@ -62,6 +62,7 @@ const MenuItem = ({ item, isMobileView, autoOpenMenuId, clearAutoOpenMenu }) => 
                     open={isMenuOpen}
                     onClose={handleClose}
                     anchorRef={buttonRef}
+                    positionAnchorRef={item.panelPositionAnchorRef}
                     variant="menu"
                     role="menu"
                     closeOnEscape={true}

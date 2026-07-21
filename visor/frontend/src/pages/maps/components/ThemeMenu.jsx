@@ -89,8 +89,8 @@ const ThemeMenu = ({ theme, activeLayerIds, onToggleLayer, closeButton, actionsB
 
     return (
         <div className="w-full flex flex-col flex-1 min-h-0 py-3">
-            <div className="px-4 flex items-center justify-between shrink-0 min-h-[47px] gap-2">
-                <h3 className="text-primary font-sans font-bold text-lg leading-tight">
+            <div className="px-4 flex items-center justify-between shrink-0 min-h-8 mb-2 gap-2">
+                <h3 className="font-sans font-bold text-[15px]/[20px] text-numeralia tracking-normal">
                     {theme.label}
                 </h3>
                 {closeButton}

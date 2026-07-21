@@ -10,6 +10,7 @@ import { useSider } from '@contexts/SiderContext';
 const Panel = ({
     open = true,
     anchorRef,
+    positionAnchorRef,
     onClose,
     title,
     children,
@@ -50,7 +51,7 @@ const Panel = ({
 
     const menuPositionResult = useSiderMenuPosition({
         open: shouldUseMenuPosition ? open : false,
-        anchorRef,
+        anchorRef: positionAnchorRef || anchorRef,
         contentRef: panelRef,
         placement,
         offset: offset ?? 8,

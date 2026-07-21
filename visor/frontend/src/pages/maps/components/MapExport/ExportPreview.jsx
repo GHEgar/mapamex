@@ -34,7 +34,7 @@ const ExportPreview = ({ isOpen, onClose, format = 'png', selectedLegends: propS
     const [capturedExtent, setCapturedExtent] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const containerRef = useRef(null);
-    const { isZenMode, setIsZenMode } = useZenMode();
+    const { isZenMode, setExportZenMode } = useZenMode();
 
     const activeLayers = activeLayerIds
         .map(id => findLayerById(id, allLayers))
@@ -45,16 +45,16 @@ const ExportPreview = ({ isOpen, onClose, format = 'png', selectedLegends: propS
             setCapturedExtent(null);
             setPreviewUrl(null);
             setShowModal(false);
-            setIsZenMode(true);
+            setExportZenMode(true);
         } else {
-            setIsZenMode(false);
+            setExportZenMode(false);
             setShowModal(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     useEffect(() => {
-        return () => setIsZenMode(false);
+        return () => setExportZenMode(false);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -139,11 +139,11 @@ const ExportPreview = ({ isOpen, onClose, format = 'png', selectedLegends: propS
     const handleConfirmCapture = () => {
         const extent = getGuideExtent();
         setCapturedExtent(extent);
-        setIsZenMode(false);
+        setExportZenMode(false);
     };
 
     const handleCancelCapture = () => {
-        setIsZenMode(false);
+        setExportZenMode(false);
         if (onClose) onClose();
     };
 

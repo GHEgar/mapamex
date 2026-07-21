@@ -6,7 +6,9 @@ const ZenModeContext = createContext();
 export const useZenMode = () => useContext(ZenModeContext);
 
 export const ZenModeProvider = ({ children }) => {
-    const [isZenMode, setIsZenMode] = useState(false);
+    const [userZenMode, setUserZenMode] = useState(false);
+    const [exportZenMode, setExportZenMode] = useState(false);
+    const isZenMode = userZenMode || exportZenMode;
 
     useEffect(() => {
         if (isZenMode) {
@@ -21,7 +23,7 @@ export const ZenModeProvider = ({ children }) => {
     }, [isZenMode]);
 
     return (
-        <ZenModeContext.Provider value={{ isZenMode, setIsZenMode }}>
+        <ZenModeContext.Provider value={{ isZenMode, userZenMode, setUserZenMode, exportZenMode, setExportZenMode }}>
             {children}
             {isZenMode && (
                 <style>{`

@@ -22,7 +22,7 @@ import { getDatabaseStats } from '@services/layerMetadataService';
 import { useBadgeSeen, isBadgeSeen } from '@pages/maps/helpers/badgeSeenStore';
 import { useZenMode } from './ZenMode';
 import MenuItem from './MenuItem';
-import SiderModeButton from './SiderModeButton';
+import SiderViewControl from './SiderViewControl';
 import EnvBadge from './EnvBadge';
 import EventoFunButton from './EventoFunButton';
 import { MAP_Z, MAP_Z_MOBILE } from '@constants/mapLayers';
@@ -68,16 +68,32 @@ const MapSider = ({ className = '' }) => {
         closeSider,
         toggleSider,
         lockMode,
-        toggleLock
+        setLockMode
     } = useSider();
+    const { isZenMode, userZenMode, setUserZenMode } = useZenMode();
     const handleToggleLock = useCallback(() => {
-        const labels = { auto: 'expandido', expanded: 'colapsado', collapsed: 'mobile', mobile: 'automatico' };
-        trackSiderLock(labels[lockMode] || 'automatico');
-        toggleLock();
-    }, [lockMode, toggleLock]);
+        if (userZenMode) {
+            setUserZenMode(false);
+            trackSiderLock('exit-zen');
+            return;
+        }
+        if (lockMode === 'auto') {
+            setLockMode('expanded');
+            setIsHovered(true);
+            trackSiderLock('fijo');
+            return;
+        }
+        if (lockMode === 'expanded') {
+            setLockMode('collapsed');
+            setIsHovered(false);
+            trackSiderLock('iconos');
+            return;
+        }
+        setLockMode('auto');
+        trackSiderLock('auto');
+    }, [lockMode, userZenMode, setLockMode, setUserZenMode, setIsHovered]);
 
     const { shouldAutoOpenSearch, clearAutoOpen } = useSearch();
-    const { isZenMode } = useZenMode();
     const layersLoading = useSlowLoading(400);
     const contentRef = useRef(null);
     const { canScrollUp, canScrollDown } = useScrollOverflow(contentRef);
@@ -85,7 +101,7 @@ const MapSider = ({ className = '' }) => {
     const autoOpenProcessedRef = useRef(false);
     const navigate = useNavigate();
 
-    const treatAsMobile = isMobile || isZenMode || lockMode === 'mobile';
+    const treatAsMobile = isMobile || isZenMode;
 
     useEffect(() => {
         if (shouldAutoOpenSearch && !autoOpenProcessedRef.current) {
@@ -162,10 +178,13 @@ const MapSider = ({ className = '' }) => {
 
     const badgeSeenVersion = useBadgeSeen();
 
+    const baseRow = isExpanded;
+    const trioRowRef = useRef(null);
+
     const menuItems = useMemo(() =>
-        createMenuItems({ isHovered: isExpanded, activeLayerIds: contextActiveLayerIds, onToggleLayer, toggleMeasurementTools: handleToggleTools, toggleAnnotationTools: handleToggleAnnotations, toolsButtonRef, areMeasurementToolsVisible, areAnnotationToolsVisible, layers: allLayers, eventos: eventosForSider, isBadgeSeen }),
+        createMenuItems({ isHovered: isExpanded, activeLayerIds: contextActiveLayerIds, onToggleLayer, toggleMeasurementTools: handleToggleTools, toggleAnnotationTools: handleToggleAnnotations, toolsButtonRef, areMeasurementToolsVisible, areAnnotationToolsVisible, layers: allLayers, eventos: eventosForSider, isBadgeSeen, baseRow, trioRowRef }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isExpanded, contextActiveLayerIds, onToggleLayer, handleToggleTools, handleToggleAnnotations, toolsButtonRef, areMeasurementToolsVisible, areAnnotationToolsVisible, allLayers, eventosForSider, badgeSeenVersion]);
+    [isExpanded, baseRow, contextActiveLayerIds, onToggleLayer, handleToggleTools, handleToggleAnnotations, toolsButtonRef, areMeasurementToolsVisible, areAnnotationToolsVisible, allLayers, eventosForSider, badgeSeenVersion]);
 
     const eventCount = eventosForSider.length;
     const baseItemsEnd = BASE_ITEMS_COUNT;
@@ -200,6 +219,10 @@ const MapSider = ({ className = '' }) => {
 
     const handleLogoClick = useCallback(() => {
         trackLogoClick('mapamex');
+        if (userZenMode) {
+            setUserZenMode(false);
+            return;
+        }
         if (treatAsMobile) {
             if (longPressRef.current === 'fired') {
                 longPressRef.current = null;
@@ -210,7 +233,7 @@ const MapSider = ({ className = '' }) => {
         }
         navigate('/');
         showStatsMarker();
-    }, [treatAsMobile, toggleSider, navigate, showStatsMarker]);
+    }, [treatAsMobile, toggleSider, navigate, showStatsMarker, userZenMode, setUserZenMode]);
 
     return (
         <>
@@ -218,7 +241,7 @@ const MapSider = ({ className = '' }) => {
                 ref={siderRef}
                 className={[
                     `absolute top-4 left-4 ${MAP_Z.PANELS} ${MAP_Z_MOBILE.PANELS} flex flex-col`,
-                    `max-h-[calc(100dvh-2rem)] bg-white shadow-lg ${isExpanded ? 'rounded-2xl' : 'rounded-[2.75rem]'} overflow-visible`,
+                    `max-h-[calc(100dvh-2rem)] bg-white shadow-lg ${isExpanded ? 'rounded-2xl' : (treatAsMobile && !isOpen ? 'rounded-full' : 'rounded-[2.75rem]')} overflow-visible`,
                     'transition-all duration-500',
                     className,
                 ].join(' ')}
@@ -230,7 +253,7 @@ const MapSider = ({ className = '' }) => {
                 onMouseLeave={!treatAsMobile ? handleMouseLeave : undefined}
             >
                 <div
-                    className="shrink-0 flex justify-center p-3 relative"
+                    className={`shrink-0 flex justify-center relative ${treatAsMobile && !isOpen ? 'p-4 items-center' : 'p-3'}`}
                     onTouchStart={handleLogoTouchStart}
                     onTouchEnd={handleLogoTouchEnd}
                     onTouchCancel={handleLogoTouchEnd}
@@ -248,28 +271,21 @@ const MapSider = ({ className = '' }) => {
                         className={`shrink-0 flex justify-center overflow-hidden transition-all duration-500 ${isExpanded ? 'rounded-2xl' : 'rounded-xl'}`}
                     />
                     <EnvBadge />
-                    {!isMobile && (
-                        <>
-                            <div className="absolute right-0 bottom-0 translate-x-1/2 translate-y-1/2 z-10">
-                                <SiderModeButton lockMode={lockMode} onToggle={handleToggleLock} />
-                            </div>
-                            {showGlobalFunButton && (
-                                <div className="absolute right-0 bottom-0 translate-x-1/2 translate-y-[calc(50%+20px)] z-10">
-                                    <EventoFunButton
-                                        evento={globalFactsEvento}
-                                        sizeClass="size-5"
-                                        iconSize={12}
-                                    />
-                                </div>
-                            )}
-                        </>
+                    {!isMobile && showGlobalFunButton && (
+                        <div className="absolute right-0 bottom-0 translate-x-1/2 translate-y-1/2 z-10">
+                            <EventoFunButton
+                                evento={globalFactsEvento}
+                                sizeClass="size-5"
+                                iconSize={12}
+                            />
+                        </div>
                     )}
                 </div>
                 {(!treatAsMobile || isOpen) && (
                     <div
                         ref={contentRef}
                         className={[
-                            'flex-1 flex flex-col gap-3 px-3 py-6',
+                            'flex-1 flex flex-col gap-3 px-3 pb-6 pt-1',
                             `${HIDDEN_SCROLLBAR}`,
                             canScrollUp && canScrollDown
                                 ? '[mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)]'
@@ -280,8 +296,19 @@ const MapSider = ({ className = '' }) => {
                                         : ''
                         ].join(' ')}
                     >
-                        <div className="bg-slate-50 rounded-2xl py-2 flex flex-col gap-3">
-                            <MenuGroup items={menuItems.slice(0, baseItemsEnd)} isMobileView={treatAsMobile} autoOpenMenuId={autoOpenMenuId} clearAutoOpenMenu={clearAutoOpenMenu} />
+                        {!isMobile && (
+                            <SiderViewControl orientation={isExpanded ? 'row' : 'column'} />
+                        )}
+                        <div ref={trioRowRef} className={`bg-slate-50 rounded-2xl p-1 flex ${baseRow ? 'flex-row' : 'flex-col'} gap-1`}>
+                            {menuItems.slice(0, baseItemsEnd).map((item, index) => (
+                                <div
+                                    key={item.id || index}
+                                    className={`${baseRow ? 'flex-1 min-w-0' : 'w-full'} shrink-0 overflow-x-hidden`}
+                                    title={item.tooltip}
+                                >
+                                    <MenuItem item={item} isMobileView={treatAsMobile} autoOpenMenuId={autoOpenMenuId} clearAutoOpenMenu={clearAutoOpenMenu} />
+                                </div>
+                            ))}
                         </div>
                         {!treatAsMobile && eventCount > 0 && (
                             <div className="flex flex-col gap-2">

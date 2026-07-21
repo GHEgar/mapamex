@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useMapsContext } from '@hooks/useMaps';
 import { useSider } from '@contexts/SiderContext';
 import Badge from '@components/Badge';
@@ -35,7 +34,6 @@ const tools = allTools.filter(tool => !tool.nonProdOnly || IS_NON_PROD);
 const ToolsMenu = ({ close, closeButton, toggleMeasurementTools, areMeasurementToolsVisible, areAnnotationToolsVisible, toggleAnnotationTools }) => {
     const { compareMode, exitCompareMode, enterCompareMode } = useMapsContext();
     const { closeSider } = useSider();
-    const [hoveredId, setHoveredId] = useState(null);
 
     const startSwipe = () => {
         enterCompareMode();
@@ -65,59 +63,58 @@ const ToolsMenu = ({ close, closeButton, toggleMeasurementTools, areMeasurementT
     };
 
     return (
-        <>
-            <div className="py-6 px-4">
-                <div className="flex items-center justify-between">
-                    <h3 className="block text-[18px]/[47px] font-sans font-bold mb-2 text-primary tracking-normal">
+        <div className="py-5 px-4">
+            <div className="flex items-center justify-between min-h-8 mb-3">
+                <h3 className="font-sans font-bold text-[15px]/[20px] text-numeralia tracking-normal">
                     Herramientas
-                    </h3>
-                    {closeButton}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    {tools.map(tool => {
-                        const active = isActive(tool.id);
-                        const hovered = hoveredId === tool.id;
-                        const tooltipContent = tool.id === 'compare-swipe' ? (
-                            <div className="flex flex-col gap-1.5 max-w-60">
-                                <span className="font-bold">{tool.label}</span>
-                                <span className="text-[11px] opacity-90">Compara dos mapas con barra divisora. Tus capas actuales van al lado A; el lado B empieza <span className="font-bold">vacío</span> para que agregues otra capa.</span>
-                                <span className="text-[11px] opacity-90">Agrega capas en cada slot (A o B) <span className="font-bold">una por una</span> para mejor rendimiento.</span>
-                            </div>
-                        ) : tool.label;
-                        return (
-                            <Tooltip key={tool.id} content={tooltipContent} placement="bottom" delay={300}>
-                                <button
-                                    type="button"
-                                    onClick={() => handleClick(tool.id)}
-                                    onMouseEnter={() => setHoveredId(tool.id)}
-                                    onMouseLeave={() => setHoveredId(null)}
-                                    className={`
-                                    relative flex flex-col items-center justify-center gap-2 cursor-pointer
-                                    w-[138px] h-[142px] p-3 rounded-2xl bg-transparent border
-                                    ${active ? 'border-primary-deep' : 'border-transparent hover:border-primary-deep'}
-                                `}
-                                >
-                                    {tool.beta && (
-                                        <Badge
-                                            variant="pill"
-                                            color="orange"
-                                            text="BETA"
-                                            className="absolute top-2 right-2"
-                                        />
-                                    )}
-                                    <div className={`flex items-center justify-center ${active || hovered ? 'text-primary' : 'text-graphite'}`}>
-                                        <Icon name={tool.icon} className="w-12 h-12" />
-                                    </div>
-                                    <span className={`text-[12px]/[18px] font-sans text-center ${active ? 'font-bold text-primary' : 'font-medium text-graphite'}`}>
-                                        {tool.label}
-                                    </span>
-                                </button>
-                            </Tooltip>
-                        );
-                    })}
-                </div>
+                </h3>
+                {closeButton}
             </div>
-        </>
+            <div className="flex flex-col gap-1.5">
+                {tools.map(tool => {
+                    const active = isActive(tool.id);
+                    const tooltipContent = tool.id === 'compare-swipe' ? (
+                        <div className="flex flex-col gap-1.5 max-w-60">
+                            <span className="font-bold">{tool.label}</span>
+                            <span className="text-[11px] opacity-90">Compara dos mapas con barra divisora. Tus capas actuales van al lado A; el lado B empieza <span className="font-bold">vacío</span> para que agregues otra capa.</span>
+                            <span className="text-[11px] opacity-90">Agrega capas en cada slot (A o B) <span className="font-bold">una por una</span> para mejor rendimiento.</span>
+                        </div>
+                    ) : tool.label;
+                    return (
+                        <Tooltip key={tool.id} content={tooltipContent} placement="right" delay={300} triggerBlock>
+                            <button
+                                type="button"
+                                onClick={() => handleClick(tool.id)}
+                                aria-pressed={active}
+                                className={`w-full flex items-center gap-3 p-2.5 rounded-2xl border transition-colors cursor-pointer text-left ${active ? 'border-primary-deep bg-primary-soft/40' : 'border-transparent hover:bg-slate-100'}`}
+                            >
+                                <span className={`shrink-0 flex items-center justify-center size-10 rounded-xl ${active ? 'bg-primary-soft text-primary-deep' : 'bg-slate-100 text-graphite'}`}>
+                                    <Icon name={tool.icon} className="size-6" />
+                                </span>
+                                <span className="flex-1 min-w-0">
+                                    <span className="flex items-center gap-1.5">
+                                        <span className={`text-[13.5px] font-sans font-bold ${active ? 'text-primary' : 'text-numeralia'}`}>
+                                            {tool.label}
+                                        </span>
+                                        {tool.beta && (
+                                            <Badge variant="pill" color="orange" text="BETA" />
+                                        )}
+                                    </span>
+                                    <span className="block text-[11px] font-sans text-graphite truncate">
+                                        {tool.description}
+                                    </span>
+                                </span>
+                                {active && (
+                                    <span className="shrink-0 text-[10px] font-sans font-bold px-2 py-0.5 rounded-full bg-primary-soft text-primary-deep">
+                                        Activo
+                                    </span>
+                                )}
+                            </button>
+                        </Tooltip>
+                    );
+                })}
+            </div>
+        </div>
     );
 };
 

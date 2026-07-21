@@ -44,10 +44,6 @@ export const SiderProvider = ({ children, collapsedWidth = SIDER_COLLAPSED_WIDTH
                 setIsHovered(false);
                 return 'collapsed';
             }
-            if (prev === 'collapsed') {
-                setIsHovered(false);
-                return 'mobile';
-            }
             return 'auto';
         });
     }, []);
@@ -112,6 +108,7 @@ export const SiderProvider = ({ children, collapsedWidth = SIDER_COLLAPSED_WIDTH
         isMobile,
         isOpen,
         lockMode,
+        setLockMode,
         toggleSider,
         closeSider,
         toggleLock,
@@ -153,7 +150,7 @@ export const useSiderHover = ({
     };
 
     const handleMouseEnter = () => {
-        if (lockMode === 'collapsed' || lockMode === 'mobile') return;
+        if (lockMode === 'collapsed') return;
 
         clearTimers();
 
