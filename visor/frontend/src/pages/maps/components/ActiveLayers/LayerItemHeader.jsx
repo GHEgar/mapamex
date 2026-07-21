@@ -9,7 +9,7 @@ export const DragHandle = ({ dragHandleProps }) => {
         <Tooltip content="Reordenar capa">
             <button
                 {...dragHandleProps}
-                className="p-0.5 rounded-full cursor-grab active:cursor-grabbing touch-none shrink-0 border border-transparent hover:border-primary-deep bg-slate-50 transition-colors"
+                className="p-0.5 rounded-full cursor-grab active:cursor-grabbing touch-none shrink-0 border border-transparent hover:border-primary-deep bg-transparent transition-colors"
                 onMouseDown={() => setIsMoveActive(true)}
                 onMouseUp={() => setIsMoveActive(false)}
                 onMouseLeave={() => setIsMoveActive(false)}
@@ -18,7 +18,7 @@ export const DragHandle = ({ dragHandleProps }) => {
                     if (dragHandleProps.onClick) dragHandleProps.onClick(e);
                 }}
             >
-                <Icon name="move" state={isMoveActive ? 'hover' : 'normal'} className="size-7" />
+                <Icon name="drag" state={isMoveActive ? 'hover' : 'normal'} className="size-5 text-slate-400" />
             </button>
         </Tooltip>
     );

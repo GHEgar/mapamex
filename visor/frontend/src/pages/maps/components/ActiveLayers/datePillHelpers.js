@@ -16,7 +16,15 @@ export const getLabelWidthClass = (kind, withPlay = false) => {
 export const SLOT_PILL = {
     A: { bg: 'bg-primary-soft', border: 'border-primary', text: 'text-primary', hover: 'hover:bg-primary/15' },
     B: { bg: 'bg-secondary-soft', border: 'border-secondary', text: 'text-secondary', hover: 'hover:bg-secondary/20' },
-    none: { bg: 'bg-secondary-soft', border: 'border-secondary', text: 'text-secondary', hover: 'hover:bg-secondary/20' },
+    none: { bg: 'bg-white', border: 'border-slate-200', text: 'text-graphite', hover: 'hover:border-primary hover:text-primary-deep' },
+};
+
+export const computePeriodicityHint = (rasterPeriodicity) => {
+    if (!rasterPeriodicity || typeof rasterPeriodicity !== 'object') return null;
+    const values = Object.values(rasterPeriodicity);
+    if (!values.length) return null;
+    const hasMonthly = values.some(v => v && typeof v === 'object');
+    return hasMonthly ? 'Mensual' : 'Anual';
 };
 
 export const computeLabel = (filter, rasterPeriodicity) => {

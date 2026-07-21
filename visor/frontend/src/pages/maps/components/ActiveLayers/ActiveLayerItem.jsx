@@ -12,10 +12,11 @@ import { handleKeyActivate } from '@utils/a11y';
 import { DragHandle, LayerTitle, PinBadge, EventoLayerIcon } from './LayerItemHeader';
 import LayerBadge from '@mapsComponents/LayerBadge';
 import LayerDateControls from './LayerDateControls';
-import LayerActionsBar from './LayerActionsBar';
-import LayerInlineActions from './LayerInlineActions';
+import LayerItemMenu from './LayerItemMenu';
+import Icon from '@components/Icon';
 import SlotBadge from './SlotBadge';
-import { computeLabel } from './datePillHelpers';
+import PeriodicityPill from './PeriodicityPill';
+import { computeLabel, computePeriodicityHint } from './datePillHelpers';
 import { ACTIVE_LAYERS_PANEL_WIDTH } from '@pages/maps/helpers/mapFit';
 import { useWMSLegend } from '@hooksMaps/useWMSLegend';
 import { useLayerMetadata } from '@hooksMaps/useLayerMetadata';
@@ -76,13 +77,17 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
 
     const itemRef = useRef(null);
     const [isHovered, setIsHovered] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
     const isSelected = selectedLayerForSymbology?.id === layer.id;
     const isExpanded = isSelected;
-    const showHandle = !isPinned && (isSelected || (!isMobile && isHovered));
 
-    const { metadata } = useLayerMetadata(isExpanded ? layer.id : null);
-    const download = useLayerDownload(isExpanded ? layer.id : null, { getFilter, getSpecificFilter, metadata });
-    const canDownload = isExpanded && metadata?.capa_descargable !== false;
+    const { metadata, loading: metadataLoading } = useLayerMetadata((isExpanded || menuOpen) ? layer.id : null);
+    const download = useLayerDownload(layer.id, { getFilter, getSpecificFilter, metadata });
+    const canDownload = (isExpanded || menuOpen) && metadata?.capa_descargable !== false;
+
+    const showMenu = !isPinned && (isMobile || isHovered || menuOpen || download.menuOpen);
+    const showDelete = !isPinned && (isMobile || isHovered || isSelected || menuOpen || download.menuOpen);
+    const showHandle = !isPinned && (isSelected || (!isMobile && isHovered));
     const handleDownloadClick = () => {
         if (download.downloading) download.handleCancelDownload();
         else download.setMenuOpen(p => !p);
@@ -143,7 +148,14 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
         return !!(liveOk || aOk || bOk);
     }, [dateFilter, rasterPeriodicity, compareMode?.paneA?.filters, compareMode?.paneB?.filters, layer.id]);
 
-    const showSlotBadgeInTitle = !!compareMode?.active && !!slotMembership && !hasAnyDateLabel;
+    const periodicityHint = useMemo(() => computePeriodicityHint(rasterPeriodicity), [rasterPeriodicity]);
+    const liveDateLabel = useMemo(() => computeLabel(dateFilter, rasterPeriodicity).label, [dateFilter, rasterPeriodicity]);
+
+    const showSlotChip = !!compareMode?.active && !!slotMembership;
+    const showTimeRow = compareMode?.active ? (isExpanded || hasAnyDateLabel) : (isExpanded || isLooping);
+    const headerPillLabel = liveDateLabel || periodicityHint;
+    const showHeaderPill = !compareMode?.active && !showTimeRow && !!headerPillLabel;
+    const headerPillTooltip = liveDateLabel ? `Fecha: ${liveDateLabel} — click para cambiar` : 'Capa con periodicidad — elige una fecha';
     const handleCycleSlot = (next) => setLayerSlotMembership?.(layer.id, next);
 
     const effectiveOpacity = useMemo(() => {
@@ -196,8 +208,6 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
     const { hasLegend } = useWMSLegend();
     const layerHasLegend = hasLegend(layer);
 
-    const warningContent = 'Al seleccionar un punto en el mapa, éste mostrará información de esta capa. Puedes cambiar la selección dando clic en la capa que necesites visualizar.';
-
     return (
         <div
             ref={itemRef}
@@ -205,107 +215,104 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
             tabIndex={0}
             aria-pressed={isSelected}
             className={`
-                rounded-2xl border border-transparent hover:border-slate-100
+                border border-transparent hover:border-slate-100
                 transition-all hover:shadow-sm cursor-pointer overflow-hidden
-                ${isSelected ? 'bg-primary-soft ring-1 ring-primary-deep' : layer.visible ? 'bg-slate-50' : 'bg-slate-100'}
+                ${isSelected
+            ? 'rounded-md bg-primary-soft/30 ring-1 ring-primary-deep'
+            : `rounded-2xl ${layer.visible ? 'bg-slate-50' : 'bg-slate-100'}`}
             `}
             onClick={handleClickOnLayer}
             onKeyDown={handleKeyActivate(handleClickOnLayer)}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <Tooltip
-                content={isSelected ? warningContent : null}
-                variant="warning"
-                placement={isMobile ? 'top' : 'left'}
-                disabled={!isSelected || download.menuOpen}
-                triggerBlock
-                triggerClassName="w-full"
-            >
-                <div className="flex flex-col gap-1.5 px-2 py-2 w-full">
-                    <div className="flex items-center gap-2 min-h-8 w-full">
-                        {isPinned && <PinBadge />}
-                        {showHandle && <DragHandle dragHandleProps={dragHandleProps} />}
-                        {!isSelected && !isMobile && isHovered ? (
-                            <LayerInlineActions
-                                visible={layer.visible}
-                                isLoading={isLoading}
-                                isLooping={isLooping}
-                                canOpenModal={canOpenModal}
-                                onToggleVisibility={handleToggleVisibilityClick}
-                                onOpenDetails={handleSetSelectedLayerClick}
-                                onRemove={handleRemoveClick}
-                                slotMembership={slotMembership}
-                                activeSlot={compareMode?.activeSlot}
-                            />
-                        ) : (
-                            <EventoLayerIcon evento={layerEvento} />
-                        )}
-                        <LayerTitle name={layer.name} />
-                        <LayerBadge badge={layer.badge} />
-                        {isLoading && !isLooping && (
-                            <Loading visible={true} size="size-5" border="border-2" />
-                        )}
-                        {showSlotBadgeInTitle && (
-                            <SlotBadge membership={slotMembership} onCycle={handleCycleSlot} layerId={layer.id} />
-                        )}
-                    </div>
-
-                    {isExpanded && (
-                        <>
-                            <LayerDateControls
-                                layerId={layer.id}
-                                layer={layer}
-                                rasterPeriodicity={rasterPeriodicity}
-                                compareMode={compareMode}
-                                slotMembership={slotMembership}
-                                liveDateFilter={dateFilter}
-                                isLooping={isLooping}
-                                isLoading={isLoading}
-                                canPlayLoop={canPlayLoop}
-                                loopIntervalMs={loopIntervalMs}
-                                loopDirection={loopDirection}
-                                onPillClick={handleDateLabelClick}
-                                onPlay={handlePlayClick}
-                                onInterval={handleIntervalClick}
-                                onDirection={handleDirectionClick}
-                                onCycleSlot={handleCycleSlot}
-                            />
-                            <LayerActionsBar
-                                layerId={layer.id}
-                                visible={layer.visible}
-                                isLoading={isLoading}
-                                isLooping={isLooping}
-                                canOpenModal={canOpenModal}
-                                opacity={effectiveOpacity}
-                                onToggleVisibility={handleToggleVisibilityClick}
-                                onOpenDetails={handleSetSelectedLayerClick}
-                                onChangeOpacity={(v) => setLayerOpacity?.(layer.id, v)}
-                                onRemove={handleRemoveClick}
-                                hasLegend={layerHasLegend}
-                                slotMembership={slotMembership}
-                                activeSlot={compareMode?.activeSlot}
-                                onSwitchSlot={setActiveSlot}
-                                canDownload={canDownload}
-                                isDownloading={download.downloading}
-                                onDownloadClick={handleDownloadClick}
-                                downloadButtonRef={download.menuAnchorRef}
-                            />
-                            {canDownload && (
-                                <DownloadMenu
-                                    open={download.menuOpen}
-                                    anchorRef={download.menuAnchorRef}
-                                    onClose={() => download.setMenuOpen(false)}
-                                    isRaster={download.isRaster}
-                                    hasDateFilter={download.hasDateFilter}
-                                    availableMetadata={download.availableMetadata}
-                                    onDownload={download.handleMenuDownload}
-                                />
-                            )}
-                        </>
+            <div className="flex flex-col gap-1.5 px-2 py-2 w-full">
+                <div className="flex items-center gap-2 min-h-8 w-full">
+                    {isPinned && <PinBadge />}
+                    {showHandle && <DragHandle dragHandleProps={dragHandleProps} />}
+                    {showHeaderPill && (
+                        <PeriodicityPill label={headerPillLabel} tooltip={headerPillTooltip} onClick={handleDateLabelClick} />
+                    )}
+                    {showSlotChip && (
+                        <SlotBadge membership={slotMembership} onCycle={handleCycleSlot} layerId={layer.id} />
+                    )}
+                    <EventoLayerIcon evento={layerEvento} />
+                    <LayerTitle name={layer.name} />
+                    <LayerBadge badge={layer.badge} />
+                    {isLoading && !isLooping && (
+                        <Loading visible={true} size="size-5" border="border-2" />
+                    )}
+                    {showMenu && (
+                        <LayerItemMenu
+                            layerId={layer.id}
+                            open={menuOpen && !download.menuOpen}
+                            onToggle={() => setMenuOpen(o => !o)}
+                            onClose={() => setMenuOpen(false)}
+                            kebabRef={download.menuAnchorRef}
+                            visible={layer.visible}
+                            isLoading={isLoading}
+                            isLooping={isLooping}
+                            canOpenModal={canOpenModal}
+                            opacity={effectiveOpacity}
+                            hasLegend={layerHasLegend}
+                            slotMembership={slotMembership}
+                            activeSlot={compareMode?.activeSlot}
+                            canDownload={canDownload}
+                            metadataLoading={metadataLoading}
+                            isDownloading={download.downloading}
+                            onToggleVisibility={handleToggleVisibilityClick}
+                            onOpenDetails={handleSetSelectedLayerClick}
+                            onChangeOpacity={(v) => setLayerOpacity?.(layer.id, v)}
+                            onDownloadClick={handleDownloadClick}
+                            onSwitchSlot={setActiveSlot}
+                        />
+                    )}
+                    {showDelete && (
+                        <Tooltip content="Eliminar capa">
+                            <button
+                                type="button"
+                                onClick={handleRemoveClick}
+                                className="p-1.5 rounded-full transition-colors cursor-pointer text-gray-500 hover:text-secondary hover:bg-secondary-soft shrink-0"
+                                aria-label="Eliminar capa"
+                            >
+                                <Icon name="eliminar" className="size-5" />
+                            </button>
+                        </Tooltip>
                     )}
                 </div>
-            </Tooltip>
+
+                {showTimeRow && (
+                    <LayerDateControls
+                        layerId={layer.id}
+                        layer={layer}
+                        rasterPeriodicity={rasterPeriodicity}
+                        compareMode={compareMode}
+                        slotMembership={slotMembership}
+                        liveDateFilter={dateFilter}
+                        isLooping={isLooping}
+                        isLoading={isLoading}
+                        canPlayLoop={canPlayLoop}
+                        loopIntervalMs={loopIntervalMs}
+                        loopDirection={loopDirection}
+                        onPillClick={handleDateLabelClick}
+                        onPlay={handlePlayClick}
+                        onInterval={handleIntervalClick}
+                        onDirection={handleDirectionClick}
+                    />
+                )}
+
+                {canDownload && download.menuOpen && (
+                    <DownloadMenu
+                        open={download.menuOpen}
+                        anchorRef={download.menuAnchorRef}
+                        onClose={() => download.setMenuOpen(false)}
+                        isRaster={download.isRaster}
+                        hasDateFilter={download.hasDateFilter}
+                        availableMetadata={download.availableMetadata}
+                        onDownload={download.handleMenuDownload}
+                    />
+                )}
+            </div>
         </div>
     );
 };

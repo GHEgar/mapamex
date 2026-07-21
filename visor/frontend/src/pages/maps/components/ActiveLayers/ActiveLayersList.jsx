@@ -7,7 +7,8 @@ import { useLayerCollapse } from './hooks/useLayerCollapse';
 import { useLayerSorting } from './hooks/useLayerSorting';
 import { SortableList, SortableItem } from './SortableList';
 import ActiveLayerItem from './ActiveLayerItem';
-import ActiveLayersToolbar from './ActiveLayersToolbar';
+import ActiveLayersMenu from './ActiveLayersMenu';
+import ActiveLayersSearchBar from './ActiveLayersSearchBar';
 import MapOutputActions from '../MapOutputActions';
 import Icon from '@components/Icon';
 import Tooltip from '@components/Tooltip';
@@ -199,9 +200,9 @@ const ActiveLayersListInner = ({ onCollapseChange, onActionsOpenChange }) => {
                 <Tooltip content={unifiedLayers.length > 0 ? 'Expandir capas activas' : 'No hay capas activas'}>
                     <button
                         onClick={collapse.handleExpand}
-                        className="group size-12.5 flex items-center justify-center bg-primary-soft rounded-full transition-colors relative hover:bg-primary-deep hover:shadow-lg cursor-pointer max-md:pointer-events-auto"
+                        className="size-12.5 flex items-center justify-center bg-white rounded-full transition-colors relative hover:bg-slate-100 hover:shadow-lg cursor-pointer max-md:pointer-events-auto"
                     >
-                        <Icon name="capa_activa" className="size-6 text-primary group-hover:text-white" />
+                        <Icon name="capa_activa" className="size-6 text-primary" />
                         <Badge visible={unifiedLayers.length > 0} count={unifiedLayers.length} className="absolute -top-1 -left-1" />
                     </button>
                 </Tooltip>
@@ -218,31 +219,37 @@ const ActiveLayersListInner = ({ onCollapseChange, onActionsOpenChange }) => {
                     <h3 className="font-sans font-bold text-[18px]/[47px]">Capas Activas</h3>
                 </div>
 
-                <Tooltip content="Colapsar capas activas">
-                    <button onClick={collapse.handleManualCollapse} className="cursor-pointer">
-                        <Icon name="zoomout" className="size-6" />
-                    </button>
-                </Tooltip>
+                <div className="flex items-center gap-2">
+                    <ActiveLayersMenu
+                        noLayers={noLayers}
+                        unifiedLayers={unifiedLayers}
+                        allHidden={allHidden}
+                        visibilityCount={visibilityCount}
+                        hasActiveLoops={hasActiveLoops}
+                        activeLoopsCount={activeLoopsCount}
+                        isInegiMode={isInegiMode}
+                        onToggleVisibilityAll={handleToggleVisibilityAll}
+                        onRemoveAll={handleRemoveAll}
+                        onPauseAll={pauseAllLoops}
+                        onToggleBaseMode={handleToggleBaseMode}
+                        onOpenSearch={() => setSearchOpen(true)}
+                        onAnyPanelOpenChange={onActionsOpenChange}
+                    />
+                    <Tooltip content="Colapsar capas activas">
+                        <button onClick={collapse.handleManualCollapse} className="cursor-pointer">
+                            <Icon name="zoomout" className="size-6" />
+                        </button>
+                    </Tooltip>
+                </div>
             </div>
 
-            <ActiveLayersToolbar
-                noLayers={noLayers}
-                unifiedLayers={unifiedLayers}
-                displayedLayers={displayedLayers}
-                isFiltering={isFiltering}
-                allHidden={allHidden}
-                visibilityCount={visibilityCount}
-                hasActiveLoops={hasActiveLoops}
-                activeLoopsCount={activeLoopsCount}
-                isInegiMode={isInegiMode}
-                onToggleVisibilityAll={handleToggleVisibilityAll}
-                onRemoveAll={handleRemoveAll}
-                onPauseAll={pauseAllLoops}
-                onToggleBaseMode={handleToggleBaseMode}
+            <ActiveLayersSearchBar
                 searchOpen={searchOpen}
                 searchQuery={searchQuery}
+                isFiltering={isFiltering}
+                displayedLayers={displayedLayers}
+                unifiedLayers={unifiedLayers}
                 onChangeSearchQuery={setSearchQuery}
-                onOpenSearch={() => setSearchOpen(true)}
                 onCloseSearch={handleCloseSearch}
                 onSearchKeyDown={handleSearchKeyDown}
                 searchInputRef={searchInputRef}
@@ -266,7 +273,7 @@ const ActiveLayersListInner = ({ onCollapseChange, onActionsOpenChange }) => {
                         onSortEnd={handleDragEnd}
                         disabled={isFiltering}
                     >
-                        <div className="space-y-1 py-1">
+                        <div className="space-y-1 pt-1 pb-2">
                             {displayedLayers.map((layer) => (
                                 <SortableItem key={layer.id} id={layer.id} isSticky={selectedLayerForSymbology?.id === layer.id}>
                                     <ActiveLayerItem layer={layer} isPinned={pinnedLayerIds.has(layer.id)} />

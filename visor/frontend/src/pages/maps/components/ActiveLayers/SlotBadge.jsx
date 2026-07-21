@@ -24,6 +24,8 @@ const SlotBadge = ({ membership, onCycle, layerId }) => {
         setHighlightedSlots?.(null);
     };
 
+    const base = 'shrink-0 inline-flex items-center h-6 px-2.5 rounded-full text-[11px] font-sans font-extrabold leading-none cursor-pointer transition-colors';
+
     return (
         <Tooltip content={tooltip} key={membership}>
             <button
@@ -32,14 +34,19 @@ const SlotBadge = ({ membership, onCycle, layerId }) => {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 aria-label={tooltip}
-                className="shrink-0 inline-flex h-6 rounded-full overflow-hidden border border-gray-200 text-[10px] font-sans font-bold leading-none cursor-pointer hover:opacity-80 transition-opacity"
+                className={
+                    membership === 'A' ? `${base} bg-primary text-white hover:bg-primary-deep`
+                        : membership === 'B' ? `${base} bg-secondary text-white hover:opacity-90`
+                            : `${base} bg-slate-100 border border-slate-200 hover:bg-slate-200`
+                }
             >
-                {(membership === 'A' || membership === 'AB') && (
-                    <span className="px-1.5 flex items-center bg-primary text-white">A</span>
-                )}
-                {(membership === 'B' || membership === 'AB') && (
-                    <span className="px-1.5 flex items-center bg-secondary text-white">B</span>
-                )}
+                {membership === 'AB' ? (
+                    <>
+                        <span className="text-primary-deep">A</span>
+                        <span className="text-slate-400 mx-1">·</span>
+                        <span className="text-secondary">B</span>
+                    </>
+                ) : membership}
             </button>
         </Tooltip>
     );
