@@ -14,7 +14,7 @@ export const createSidePanelLegend = (selectedLegend, getLegendUrl, sectionPaddi
         flex: '1',
         overflow: 'auto',
         display: 'flex',
-        alignItems: 'flex-start'
+        alignItems: 'center'
     });
 
     const legendUrl = getLegendUrl(selectedLegend, {
