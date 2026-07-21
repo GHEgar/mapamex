@@ -7,8 +7,6 @@ import { trackMunicipioPanelOpen } from '@services/analyticsService';
 import { SCOPE_TYPES } from '@pages/maps/hooks/useMunicipioMode';
 import MunicipioFilterPanel from './MunicipioFilterPanel';
 
-const IS_NON_PROD = ['dev', 'beta'].includes(import.meta.env.VITE_APP_ENV);
-
 const scopeText = (municipioMode) => {
     const { active, scope, scopeLabel } = municipioMode;
     if (!active || !scope?.type) return null;
@@ -31,7 +29,7 @@ const MunicipioFilterButton = ({ municipioMode, onOpenChange, collapsed = false 
     const anchorRef = useRef(null);
     const { isMobile } = useSider();
 
-    if (!IS_NON_PROD || !municipioMode) return null;
+    if (!municipioMode) return null;
 
     const handleSetOpen = (open) => {
         setIsOpen(open);
@@ -70,16 +68,6 @@ const MunicipioFilterButton = ({ municipioMode, onOpenChange, collapsed = false 
                     ) : (
                         <Icon name="center_group" className="size-6 text-primary" />
                     )}
-                    <span
-                        className={[
-                            'absolute -top-1 -right-1 z-10',
-                            'px-1.5 py-0.5 rounded-full',
-                            'text-[8px]/[10px] font-sans font-bold uppercase tracking-wider',
-                            'bg-secondary text-white shadow-sm pointer-events-none',
-                        ].join(' ')}
-                    >
-                        beta
-                    </span>
                 </button>
             </Tooltip>
 
