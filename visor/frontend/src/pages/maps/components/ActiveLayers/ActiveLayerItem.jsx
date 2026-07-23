@@ -174,11 +174,10 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
             tabIndex={0}
             aria-pressed={isSelected}
             className={`
-                border border-transparent hover:border-slate-100
-                transition-all hover:shadow-sm cursor-pointer overflow-hidden
+                transition-all shadow-sm hover:shadow-md cursor-pointer overflow-hidden
                 ${isSelected
             ? 'rounded-md bg-primary-soft/30 ring-1 ring-primary-deep'
-            : `rounded-2xl ${layer.visible ? 'bg-slate-50' : 'bg-slate-100'}`}
+            : `rounded-2xl ${layer.visible ? 'bg-white' : 'bg-slate-50'}`}
             `}
             onClick={handleClickOnLayer}
             onKeyDown={handleKeyActivate(handleClickOnLayer)}
