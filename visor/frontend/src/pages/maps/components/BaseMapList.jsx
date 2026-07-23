@@ -1,10 +1,9 @@
-import { BASEMAP_ORDER } from '@pages/maps/helpers/basemaps';
 import { useMapsContext } from '@hooks/useMaps';
 import Icon from '@components/Icon';
 import { trackBasemapChange } from '@services/analyticsService';
 
 const BaseMapList = ({ closeButton }) => {
-    const { baseMapId, setBaseMapId, basemaps } = useMapsContext();
+    const { baseMapId, setBaseMapId, basemaps, basemapOrder } = useMapsContext();
 
     return (
         <div className="py-5 px-4">
@@ -15,7 +14,7 @@ const BaseMapList = ({ closeButton }) => {
                 {closeButton}
             </div>
             <div className="flex flex-col gap-1.5">
-                {BASEMAP_ORDER.map(id => {
+                {basemapOrder.map(id => {
                     const active = baseMapId === id;
                     const label = basemaps[id]?.label ?? id;
 

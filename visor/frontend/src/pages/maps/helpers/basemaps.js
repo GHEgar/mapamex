@@ -14,6 +14,7 @@ export const BASEMAPS = {
     voyager: {
         id: 'carto_voyager',
         label: 'Mapa Carto Voyager',
+        type: 'xyz',
         labelZoomThreshold: 15,
         create: () => cartoSource('rastertiles/voyager_nolabels'),
         createLabelsOverlay: () => cartoSource('rastertiles/voyager_only_labels'),
@@ -21,6 +22,7 @@ export const BASEMAPS = {
     position: {
         id: 'carto_light',
         label: 'Carto Light',
+        type: 'xyz',
         labelZoomThreshold: 15,
         create: () => cartoSource('light_nolabels'),
         createLabelsOverlay: () => cartoSource('light_only_labels'),
@@ -28,6 +30,7 @@ export const BASEMAPS = {
     sin_visor: {
         id: 'sin_visor',
         label: 'Sin Mapa Base',
+        type: 'none',
         create: () => null,
     }
 };
@@ -37,6 +40,57 @@ export const BASEMAP_ORDER = [
     'position',
     'sin_visor'
 ];
+
+const buildXYZSource = (url, attributions, subdomains) => new XYZ({
+    url,
+    attributions: attributions || undefined,
+    subdomains: (Array.isArray(subdomains) && subdomains.length) ? subdomains : undefined,
+    crossOrigin: 'anonymous',
+});
+
+const buildWMSSource = (url, params) => new TileWMS({
+    url,
+    params: { TILED: true, FORMAT: 'image/png', TRANSPARENT: true, VERSION: '1.1.0', ...(params || {}) },
+    serverType: 'geoserver',
+    crossOrigin: 'anonymous',
+});
+
+const buildBasemapEntry = (cfg) => {
+    if (cfg.type === 'none') {
+        return { id: cfg.slug, label: cfg.label, type: 'none', create: () => null };
+    }
+    if (cfg.type === 'wms') {
+        return {
+            id: cfg.slug,
+            label: cfg.label,
+            type: 'wms',
+            create: () => (cfg.url ? buildWMSSource(cfg.url, cfg.wmsParams) : null),
+        };
+    }
+    const entry = {
+        id: cfg.slug,
+        label: cfg.label,
+        type: 'xyz',
+        create: () => (cfg.url ? buildXYZSource(cfg.url, cfg.attributions, cfg.subdomains) : null),
+    };
+    if (cfg.labelsUrl) {
+        entry.createLabelsOverlay = () => buildXYZSource(cfg.labelsUrl, cfg.attributions, cfg.subdomains);
+        if (cfg.labelZoomThreshold != null) entry.labelZoomThreshold = cfg.labelZoomThreshold;
+    }
+    return entry;
+};
+
+export const buildBasemapsFromConfig = (list) => {
+    const basemaps = {};
+    const order = [];
+    (list || []).forEach((cfg) => {
+        if (!cfg?.slug) return;
+        basemaps[cfg.slug] = buildBasemapEntry(cfg);
+        order.push(cfg.slug);
+    });
+    if (order.length === 0) return { basemaps: BASEMAPS, order: BASEMAP_ORDER };
+    return { basemaps, order };
+};
 
 const GEOSERVER_BASE = (import.meta.env.VITE_GEOSERVER_URL || '').replace(/\/+$/, '');
 

@@ -5,7 +5,7 @@ import { markBadgeSeen } from '@pages/maps/helpers/badgeSeenStore';
 import { isBadgeInValidityWindow } from '@pages/maps/helpers/badgeHelpers';
 import MapsContext from '@contexts/MapsContext';
 import EventoProvider from '@providers/EventoProvider';
-import { BASEMAPS } from '@pages/maps/helpers/basemaps';
+import { useBasemaps } from '@hooks/useBasemaps';
 import { useLayerManagement } from '@hooksMaps/useLayerManagement';
 import { useSymbology } from '@hooksMaps/useSymbology';
 import { useLayerOpacity } from '@hooksMaps/useLayerOpacity';
@@ -26,6 +26,7 @@ import { toLonLat } from 'ol/proj';
 
 const MapsProvider = ({ children }) => {
     const { layers: allLayers } = useLayers();
+    const { basemaps, basemapOrder } = useBasemaps();
     const [baseMapId, setBaseMapId] = useState('voyager');
     const [siderCollapsed, setSiderCollapsed] = useState(true);
     const [selectedLayer, setSelectedLayer] = useState(null);
@@ -247,7 +248,8 @@ const MapsProvider = ({ children }) => {
         mapRef,
         paneMapInstances,
         setPaneMapInstance,
-        basemaps: BASEMAPS,
+        basemaps,
+        basemapOrder,
         selectedLayer,
         setSelectedLayer,
         periodicityRequest,
@@ -278,6 +280,8 @@ const MapsProvider = ({ children }) => {
         pulseLayer,
         cancelPulse,
     }), [
+        basemaps,
+        basemapOrder,
         baseMapId,
         siderCollapsed,
         selectedLayer,

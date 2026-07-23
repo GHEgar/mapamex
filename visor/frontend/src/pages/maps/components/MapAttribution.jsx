@@ -1,14 +1,13 @@
 import { useMapsContext } from '@hooks/useMaps';
-import { BASEMAPS } from '@pages/maps/helpers/basemaps';
 import ReportButton from '@components/ReportButton';
 import { MAP_Z } from '@constants/mapLayers';
 
 const linkClass = 'hover:text-primary hover:underline transition-colors';
 
 const MapAttribution = () => {
-    const { baseMapId } = useMapsContext();
-    const basemapConfig = BASEMAPS[baseMapId];
-    if (!basemapConfig || basemapConfig.id === 'sin_visor') return null;
+    const { baseMapId, basemaps } = useMapsContext();
+    const basemapConfig = basemaps?.[baseMapId];
+    if (!basemapConfig || basemapConfig.type === 'none') return null;
 
     return (
         <div className={`fixed bottom-4 right-4 ${MAP_Z.BASE} flex items-center gap-2`}>
