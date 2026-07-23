@@ -30,6 +30,8 @@ COUNTER_VISOR_SHARE_WRITES = 'cms_visor_share_writes_total'
 COUNTER_LOGIN_SUCCESS = 'cms_login_success_total'
 COUNTER_LOGIN_FAILED = 'cms_login_failed_total'
 COUNTER_LOGIN_LOCKED = 'cms_login_locked_total'
+COUNTER_REFRESH_SUCCESS = 'cms_refresh_success_total'
+COUNTER_REFRESH_REUSED = 'cms_refresh_reuse_detected_total'
 
 
 def incr(name: str, amount: int = 1) -> None:

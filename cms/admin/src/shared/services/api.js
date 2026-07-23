@@ -56,12 +56,56 @@ export const refreshCsrfToken = async () => {
     return csrfRefreshPromise;
 };
 
+let sessionRefreshPromise = null;
+
+export const refreshSession = async () => {
+    if (sessionRefreshPromise) return sessionRefreshPromise;
+    sessionRefreshPromise = (async () => {
+        try {
+            const { data } = await axios.post(
+                `${API_URL}/autenticacion/refrescar`,
+                null,
+                { withCredentials: true, timeout: 10000 }
+            );
+            if (data?.csrf_token) {
+                sessionStorage.setItem('csrf_token', data.csrf_token);
+                return true;
+            }
+            return false;
+        } catch {
+            return false;
+        } finally {
+            sessionRefreshPromise = null;
+        }
+    })();
+    return sessionRefreshPromise;
+};
+
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const original = error.config;
 
         if (error.response?.status === 401) {
+            const url = original?.url || '';
+            const skipRefresh = url.includes('/autenticacion/refrescar')
+                || url.includes('/autenticacion/iniciar-sesion');
+            if (original && !skipRefresh && !original.__authRetried) {
+                original.__authRetried = true;
+                const refreshed = await refreshSession();
+                if (refreshed) {
+                    const csrfToken = sessionStorage.getItem('csrf_token');
+                    if (csrfToken) {
+                        if (original.headers && typeof original.headers.set === 'function') {
+                            original.headers.set('X-CSRF-Token', csrfToken);
+                        } else {
+                            original.headers = original.headers || {};
+                            original.headers['X-CSRF-Token'] = csrfToken;
+                        }
+                    }
+                    return api.request(original);
+                }
+            }
             sessionStorage.removeItem('csrf_token');
             if (!redirectingToLogin && !window.location.pathname.endsWith('/login')) {
                 redirectingToLogin = true;

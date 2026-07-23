@@ -2,7 +2,18 @@ import logging
 import uuid
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
+from fastapi import (
+    APIRouter,
+    Cookie,
+    Depends,
+    File,
+    HTTPException,
+    Request,
+    Response,
+    UploadFile,
+    status,
+)
+from fastapi.responses import JSONResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -16,14 +27,24 @@ from app.api.metrics import (
     COUNTER_LOGIN_FAILED,
     COUNTER_LOGIN_LOCKED,
     COUNTER_LOGIN_SUCCESS,
+    COUNTER_REFRESH_REUSED,
+    COUNTER_REFRESH_SUCCESS,
     incr,
 )
 from app.api.rate_limit import _client_ip, rate_limit_ip
-from app.core.storage_url import to_relative
 from app.core.cache import redis_client
 from app.core.database import get_db
+from app.core.refresh_token import (
+    ROTATE_OK,
+    ROTATE_REUSED,
+    issue_refresh_token,
+    revoke_refresh_token,
+    revoke_user_refresh_tokens,
+    rotate_refresh_token,
+)
 from app.core.security import crear_access_token, crear_csrf_token, hash_password, verify_password
 from app.core.settings import get_settings
+from app.core.storage_url import to_relative
 from app.models.storage_bucket import StorageBucket
 from app.models.user import Usuario
 from app.schemas.user import (
@@ -34,8 +55,8 @@ from app.schemas.user import (
     PerfilUpdate,
     UsuarioResponse,
 )
-from app.services.storage import StorageClient
 from app.services.actividad_service import registrar_actividad
+from app.services.storage import StorageClient
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/autenticacion", tags=["autenticación"])
@@ -48,6 +69,61 @@ _LOGIN_USERNAME_WINDOW_SECONDS = 300
 
 def _username_lockout_key(identifier: str) -> str:
     return _LOGIN_USERNAME_LOCKOUT_KEY.format(identifier)
+
+
+_REFRESH_COOKIE_PATH = f"{settings.admin_prefix}/autenticacion"
+
+
+def _set_access_cookie(response: Response, access_token: str) -> None:
+    response.set_cookie(
+        key=settings.cookie_name,
+        value=access_token,
+        max_age=settings.cookie_max_age,
+        httponly=settings.cookie_httponly,
+        secure=settings.cookie_secure,
+        samesite=settings.cookie_samesite,
+        domain=settings.cookie_domain,
+    )
+
+
+def _set_refresh_cookie(response: Response, raw: str) -> None:
+    response.set_cookie(
+        key=settings.refresh_cookie_name,
+        value=raw,
+        max_age=settings.refresh_token_expire_minutes * 60,
+        path=_REFRESH_COOKIE_PATH,
+        httponly=settings.cookie_httponly,
+        secure=settings.cookie_secure,
+        samesite=settings.cookie_samesite,
+        domain=settings.cookie_domain,
+    )
+
+
+def _delete_session_cookies(response: Response) -> None:
+    response.delete_cookie(
+        key=settings.cookie_name,
+        httponly=settings.cookie_httponly,
+        secure=settings.cookie_secure,
+        samesite=settings.cookie_samesite,
+        domain=settings.cookie_domain,
+    )
+    response.delete_cookie(
+        key=settings.refresh_cookie_name,
+        path=_REFRESH_COOKIE_PATH,
+        httponly=settings.cookie_httponly,
+        secure=settings.cookie_secure,
+        samesite=settings.cookie_samesite,
+        domain=settings.cookie_domain,
+    )
+
+
+def _refresh_rejected() -> JSONResponse:
+    resp = JSONResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content={"detail": "Sesión expirada"},
+    )
+    _delete_session_cookies(resp)
+    return resp
 
 
 @router.post(
@@ -133,15 +209,11 @@ async def login(
         data={"sub": usuario.username}, expires_delta=access_token_expires
     )
 
-    response.set_cookie(
-        key=settings.cookie_name,
-        value=access_token,
-        max_age=settings.cookie_max_age,
-        httponly=settings.cookie_httponly,
-        secure=settings.cookie_secure,
-        samesite=settings.cookie_samesite,
-        domain=settings.cookie_domain,
-    )
+    _set_access_cookie(response, access_token)
+
+    refresh_raw = issue_refresh_token(usuario.username)
+    if refresh_raw:
+        _set_refresh_cookie(response, refresh_raw)
 
     csrf_token = crear_csrf_token(usuario.username)
 
@@ -170,20 +242,73 @@ async def login(
     )
 
 
+@router.post(
+    "/refrescar",
+    dependencies=[Depends(rate_limit_ip(max_requests=20, window_seconds=60, scope='refresh'))],
+)
+async def refrescar_sesion(
+    request: Request,
+    db: Session = Depends(get_db),
+    refresh_cookie: str | None = Cookie(default=None, alias=settings.refresh_cookie_name),
+):
+    if not refresh_cookie:
+        return _refresh_rejected()
+
+    rotate_status, new_raw, username = rotate_refresh_token(refresh_cookie)
+
+    if rotate_status == ROTATE_REUSED:
+        incr(COUNTER_REFRESH_REUSED)
+        logger.warning(
+            'action=refresh.reuse_detected user=%s ip=%s', username, _client_ip(request)
+        )
+        try:
+            actor = db.query(Usuario).filter(Usuario.username == username).first()
+            registrar_actividad(
+                db,
+                actor=actor,
+                action="login.refresh_reuse",
+                resource_type="usuario",
+                resource_id=actor.id if actor else None,
+                metadata={"username": username},
+                ip=_client_ip(request),
+            )
+            db.commit()
+        except Exception as exc:
+            db.rollback()
+            logger.warning('actividad refresh_reuse fallo user=%s: %s', username, exc)
+        return _refresh_rejected()
+
+    if rotate_status != ROTATE_OK or not new_raw:
+        return _refresh_rejected()
+
+    usuario = db.query(Usuario).filter(Usuario.username == username).first()
+    if usuario is None:
+        revoke_user_refresh_tokens(username)
+        return _refresh_rejected()
+
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+    access_token = crear_access_token(
+        data={"sub": usuario.username}, expires_delta=access_token_expires
+    )
+
+    resp = JSONResponse(content={"csrf_token": crear_csrf_token(usuario.username)})
+    _set_access_cookie(resp, access_token)
+    _set_refresh_cookie(resp, new_raw)
+    incr(COUNTER_REFRESH_SUCCESS)
+    return resp
+
+
 @router.post("/cerrar-sesion")
 async def logout(
     response: Response,
     request: Request,
     current_user: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db),
+    refresh_cookie: str | None = Cookie(default=None, alias=settings.refresh_cookie_name),
 ):
-    response.delete_cookie(
-        key=settings.cookie_name,
-        httponly=settings.cookie_httponly,
-        secure=settings.cookie_secure,
-        samesite=settings.cookie_samesite,
-        domain=settings.cookie_domain,
-    )
+    if refresh_cookie:
+        revoke_refresh_token(refresh_cookie)
+    _delete_session_cookies(response)
     try:
         registrar_actividad(
             db,
@@ -334,19 +459,16 @@ async def cambiar_contrasena(
     db.commit()
     logger.info('action=user.change_password user_id=%s', current_user.id)
 
+    revoke_user_refresh_tokens(current_user.username)
+
     access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = crear_access_token(
         data={"sub": current_user.username}, expires_delta=access_token_expires
     )
-    response.set_cookie(
-        key=settings.cookie_name,
-        value=access_token,
-        max_age=settings.cookie_max_age,
-        httponly=settings.cookie_httponly,
-        secure=settings.cookie_secure,
-        samesite=settings.cookie_samesite,
-        domain=settings.cookie_domain,
-    )
+    _set_access_cookie(response, access_token)
+    refresh_raw = issue_refresh_token(current_user.username)
+    if refresh_raw:
+        _set_refresh_cookie(response, refresh_raw)
     csrf_token = crear_csrf_token(current_user.username)
 
     return {
