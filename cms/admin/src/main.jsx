@@ -28,6 +28,7 @@ const EventosListPage = lazy(() => import('@features/visor-eventos').then((m) =>
 const EventoEditPage = lazy(() => import('@features/visor-eventos').then((m) => ({ default: m.EventoEditPage })));
 const HomePage = lazy(() => import('@features/visor-home').then((m) => ({ default: m.HomePage })));
 const SymbolsPage = lazy(() => import('@features/visor-symbols').then((m) => ({ default: m.SymbolsPage })));
+const BasemapsPage = lazy(() => import('@features/visor-basemaps').then((m) => ({ default: m.BasemapsPage })));
 const GeoserverFilesPage = lazy(() => import('@features/visor-geoserver-files').then((m) => ({ default: m.GeoserverFilesPage })));
 const VisorStatsPage = lazy(() => import('@features/visor-stats').then((m) => ({ default: m.VisorStatsPage })));
 const DocumentacionPage = lazy(() => import('@features/documentacion').then((m) => ({ default: m.DocumentacionPage })));
@@ -162,6 +163,14 @@ const router = createBrowserRouter([
                         element: withSuspense(
                             <RoleProtectedRoute allowedRoles={['tetlamamakani']}>
                                 <SymbolsPage />
+                            </RoleProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'visor/basemaps',
+                        element: withSuspense(
+                            <RoleProtectedRoute allowedRoles={['tetlamamakani']}>
+                                <BasemapsPage />
                             </RoleProtectedRoute>
                         )
                     },

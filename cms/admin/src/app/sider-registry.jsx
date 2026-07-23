@@ -5,6 +5,7 @@ import {
     CalendarOutlined,
     EnvironmentOutlined,
     FileTextOutlined,
+    GlobalOutlined,
     HomeOutlined,
     InboxOutlined,
     KeyOutlined,
@@ -25,6 +26,10 @@ export const PROJECT_REGISTRY = {
             { key: '/visor/initial-order', path: '/visor/initial-order', label: 'Capas iniciales', icon: <OrderedListOutlined /> },
             { key: '/visor/eventos', path: '/visor/eventos', label: 'Eventos', icon: <CalendarOutlined /> },
             { key: '/visor/home', path: '/visor/home', label: 'Inicio', icon: <HomeOutlined /> },
+            {
+                key: '/visor/basemaps', path: '/visor/basemaps', label: 'Mapas base',
+                icon: <GlobalOutlined />, allowedGlobalRoles: ['tetlamamakani'],
+            },
             {
                 key: '/visor/simbolos', path: '/visor/simbolos', label: 'Símbolos',
                 icon: <AppstoreOutlined />, allowedGlobalRoles: ['tetlamamakani'], showBetaBadge: true,
