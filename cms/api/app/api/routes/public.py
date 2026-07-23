@@ -10,12 +10,16 @@ from app.core.settings import get_settings
 from app.core.time import utcnow
 from app.models.evento import Evento
 from app.models.home_section import HomeSection
+from app.schemas.basemap import BasemapPublicResponse
 from app.schemas.evento import EventoPublicResponse
 from app.schemas.home_section import SECTION_SCHEMAS, HomePublicResponse
+from app.services.basemap_service import list_active_basemaps
 from app.services.visor_public_cache import (
+    get_cached_basemaps,
     get_cached_eventos,
     get_cached_home,
     get_versions,
+    store_cached_basemaps,
     store_cached_eventos,
     store_cached_home,
 )
@@ -83,4 +87,24 @@ async def home_publicado(db: Session = Depends(get_db)):
     response = HomePublicResponse(**sanitized)
     payload_json = response.model_dump_json(by_alias=True)
     store_cached_home(version, payload_json)
+    return _json_response(payload_json)
+
+
+@visor_router.get("/basemaps", response_model=list[BasemapPublicResponse])
+async def basemaps_publicos(db: Session = Depends(get_db)):
+    version, cached = get_cached_basemaps()
+    if cached is not None:
+        return _json_response(cached)
+
+    basemaps = list_active_basemaps(db)
+    serialized = []
+    for b in basemaps:
+        try:
+            serialized.append(
+                BasemapPublicResponse.model_validate(b).model_dump(by_alias=True, mode='json')
+            )
+        except Exception as exc:
+            logger.warning('Mapa base %s omitido del listado público: %s', getattr(b, 'id', '?'), exc)
+    payload_json = json.dumps(serialized, default=str)
+    store_cached_basemaps(version, payload_json)
     return _json_response(payload_json)

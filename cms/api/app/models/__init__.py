@@ -2,6 +2,7 @@ from app.core.database import Base
 from app.models.storage import StorageFile, StorageFolder
 from app.models.storage_bucket import StorageBucket
 from app.models.actividad_log import ActividadLog
+from app.models.basemap import Basemap
 from app.models.borrador import Borrador
 from app.models.evento import Evento
 from app.models.home_section import HomeSection
@@ -20,6 +21,7 @@ __all__ = [
     "Usuario",
     "StorageFile",
     "StorageFolder",
+    "Basemap",
     "Borrador",
     "Evento",
     "HomeSection",

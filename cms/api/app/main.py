@@ -12,6 +12,7 @@ from app.api.routes import (
     storage_buckets,
     actividad,
     auth,
+    basemaps,
     borradores,
     bulk_ingest,
     eventos,
@@ -82,6 +83,7 @@ def create_app() -> FastAPI:
     app.include_router(symbols.router, prefix=settings.admin_prefix, dependencies=staff_dep)
     app.include_router(geoserver.router, prefix=settings.admin_prefix, dependencies=staff_dep)
     app.include_router(eventos.router, prefix=settings.admin_prefix, dependencies=staff_dep)
+    app.include_router(basemaps.router, prefix=settings.admin_prefix, dependencies=staff_dep)
     app.include_router(home.router, prefix=settings.admin_prefix, dependencies=staff_dep)
     app.include_router(visor_shares.router, prefix=settings.admin_prefix, dependencies=staff_dep)
     app.include_router(visor_api_keys.router, prefix=settings.admin_prefix, dependencies=staff_dep)

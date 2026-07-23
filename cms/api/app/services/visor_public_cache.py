@@ -12,6 +12,7 @@ _TTL_SECONDS = 60 * 60 * 24 * 30
 
 _KEY_EVENTOS = 'visor:public_cache_version:eventos'
 _KEY_HOME = 'visor:public_cache_version:home'
+_KEY_BASEMAPS = 'visor:public_cache_version:basemaps'
 _PAYLOAD_PREFIX = 'visor:public_cache:payload'
 
 
@@ -67,6 +68,7 @@ def get_versions() -> dict[str, str]:
     return {
         'eventos': _current_version(_KEY_EVENTOS),
         'home': _current_version(_KEY_HOME),
+        'basemaps': _current_version(_KEY_BASEMAPS),
     }
 
 
@@ -86,9 +88,21 @@ def store_cached_home(version: str, payload_json: str) -> None:
     _store_payload('home', version, payload_json)
 
 
+def get_cached_basemaps() -> tuple[str, str | None]:
+    return _get_cached_payload('basemaps', _KEY_BASEMAPS)
+
+
+def store_cached_basemaps(version: str, payload_json: str) -> None:
+    _store_payload('basemaps', version, payload_json)
+
+
 def notify_eventos_changed() -> None:
     _bump(_KEY_EVENTOS)
 
 
 def notify_home_changed() -> None:
     _bump(_KEY_HOME)
+
+
+def notify_basemaps_changed() -> None:
+    _bump(_KEY_BASEMAPS)
