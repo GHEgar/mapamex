@@ -9,6 +9,8 @@ import ExportPreview from './MapExport/ExportPreview';
 import { useShareDirtiness } from '@pages/maps/hooks/useShareDirtiness';
 import { useMapsContext } from '@hooks/useMaps';
 
+const IS_NON_PROD = ['dev', 'beta'].includes(import.meta.env.VITE_APP_ENV);
+
 const RAIL_CLASS = 'absolute right-full top-2 mr-3 z-10 flex flex-col items-end gap-2 pointer-events-auto max-md:right-0 max-md:top-auto max-md:bottom-full max-md:mr-0 max-md:mb-2 max-md:flex-row max-md:items-center';
 
 const MapOutputActions = ({ onAnyPanelOpenChange, className }) => {
@@ -86,11 +88,13 @@ const MapOutputActions = ({ onAnyPanelOpenChange, className }) => {
                     onOpenChange={setIsDownloadOpen}
                     collapsed
                 />
-                <MunicipioFilterButton
-                    municipioMode={municipioMode}
-                    onOpenChange={setIsMunicipioOpen}
-                    collapsed
-                />
+                {IS_NON_PROD && (
+                    <MunicipioFilterButton
+                        municipioMode={municipioMode}
+                        onOpenChange={setIsMunicipioOpen}
+                        collapsed
+                    />
+                )}
                 <ShareButton onOpenChange={setIsShareOpen} />
             </div>
             {isPreviewOpen && (
