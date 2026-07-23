@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMapsContext } from '@hooks/useMaps';
 import { useWMSLegend } from '@hooksMaps/useWMSLegend';
 import { useLegendsVisibility } from './ActiveLayers/hooks/useLegendsVisibility';
@@ -39,10 +39,6 @@ const MapLegend = () => {
     const { hasLegend, getLegendUrl } = useWMSLegend();
     const { visible } = useLegendsVisibility();
     const [minimized, setMinimized] = useState(false);
-
-    useEffect(() => {
-        setMinimized(false);
-    }, [layer?.id]);
 
     const slotMembership = useMemo(() => {
         if (!compareMode?.active || !layer) return null;
