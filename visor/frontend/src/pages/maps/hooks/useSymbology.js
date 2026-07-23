@@ -122,6 +122,7 @@ export const useSymbology = ({
     }, [activeLayerIds, getAllChildLayerIds]);
 
     const isStartupRef = useRef(true);
+    const hadActiveRef = useRef(false);
 
     useEffect(() => {
         const isSwipeActive = !!compareMode?.active;
@@ -136,9 +137,10 @@ export const useSymbology = ({
             || (swipeAllIds && swipeAllIds.length > 0);
 
         if (!hasAnyActive) {
-            setSelectedLayerForSymbology(null);
+            if (hadActiveRef.current) setSelectedLayerForSymbology(null);
             return;
         }
+        hadActiveRef.current = true;
 
         const candidateIds = swipeAllIds && swipeAllIds.length > 0
             ? [...new Set([...(activeLayerIds || []), ...swipeAllIds])]
