@@ -17,7 +17,6 @@ export const useLayerToggle = ({
     setActiveLayerIds,
     getAllChildLayerIds,
     findLayerById,
-    setSelectedLayer,
     setSelectedLayerForSymbology,
     applyFilter,
     clearFilter,
@@ -148,9 +147,6 @@ export const useLayerToggle = ({
                 const groupAncestor = findParentGroup(layerId, allLayers);
                 const displayLayer = groupAncestor || layer;
                 setSelectedLayerForSymbology(displayLayer);
-                if (!skipAnalytics) {
-                    setSelectedLayer({ id: displayLayer.id, name: displayLayer.label, silent: true });
-                }
             }
         } else {
             const childLayerIds = getAllChildLayerIds(layerId);
@@ -162,7 +158,7 @@ export const useLayerToggle = ({
                 markerConfig.forEach(m => hideMarker?.(`layer_${layerId}_${m.center.join(',')}`));
             }
         }
-    }, [setActiveLayerIds, getAllChildLayerIds, findLayerById, setSelectedLayer, setSelectedLayerForSymbology, applyDefaultDate, clearDefaultDate, applyDefaultZoom, showMarker, hideMarker, allLayers]);
+    }, [setActiveLayerIds, getAllChildLayerIds, findLayerById, setSelectedLayerForSymbology, applyDefaultDate, clearDefaultDate, applyDefaultZoom, showMarker, hideMarker, allLayers]);
 
     return { handleToggleLayer, applyDefaultDate };
 };

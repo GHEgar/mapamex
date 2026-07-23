@@ -44,21 +44,20 @@ export const YearBadge = ({ year, slot }) => {
 
 export const PlayPauseButton = ({ isPlaying, onToggle, slot, disabled = false, disabledHint }) => {
     const IconGlyph = isPlaying ? Pause : Play;
-    const label = isPlaying ? 'PAUSAR' : 'VER ANIMACIÓN';
+    const label = isPlaying ? 'Pausar' : 'Ver animación';
     const palette = disabled ? DISABLED_CLASSES : (PLAY_PALETTE[slot] || PLAY_PALETTE.default);
 
-    const button = (
-        <button
-            onClick={disabled ? undefined : onToggle}
-            disabled={disabled}
-            className={`flex items-center gap-2 px-2 py-1.5 rounded-2xl border text-[8px]/[16px] font-bold font-sans transition-colors ${palette}`}
-        >
-            <IconGlyph className={`w-2.5 h-2.5 fill-current ${disabled ? 'opacity-50' : ''}`} />
-            {label}
-        </button>
+    return (
+        <Tooltip content={disabled && disabledHint ? disabledHint : label}>
+            <button
+                onClick={disabled ? undefined : onToggle}
+                disabled={disabled}
+                className={`flex items-center justify-center h-7.5 w-7.5 rounded-2xl border transition-colors ${palette}`}
+            >
+                <IconGlyph className={`w-3 h-3 fill-current ${disabled ? 'opacity-50' : ''}`} />
+            </button>
+        </Tooltip>
     );
-
-    return disabled && disabledHint ? <Tooltip content={disabledHint}>{button}</Tooltip> : button;
 };
 
 export const CarouselArrow = ({ direction, onClick }) => (

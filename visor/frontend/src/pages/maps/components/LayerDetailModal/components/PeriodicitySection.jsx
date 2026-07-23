@@ -55,7 +55,7 @@ const PeriodicitySection = ({
         <div className="mb-4">
             <div className="flex items-center justify-between gap-2 my-5 flex-wrap">
                 <div className="flex items-center gap-2">
-                    <button type="button" className="text-sm leading-4 font-sans font-bold text-primary tracking-normal select-none cursor-pointer" onClick={handleClick} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} onTouchCancel={handleTouchEnd}>
+                    <button type="button" className="text-sm leading-4 font-sans font-bold text-numeralia tracking-normal select-none cursor-pointer" onClick={handleClick} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} onTouchCancel={handleTouchEnd}>
                         Periodicidad{label ? ` ${label}` : ''}:
                     </button>
                     {isAdvancedMode && (

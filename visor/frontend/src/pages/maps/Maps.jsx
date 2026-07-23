@@ -13,7 +13,6 @@ import MeasurementTools from './components/MeasurementTools/ToolsPanel';
 import MapAttribution from './components/MapAttribution';
 import MapLegend from './components/MapLegend';
 import LayerNotices from './components/LayerNotices/LayerNotices';
-import { LegendsVisibilityProvider } from './components/ActiveLayers/hooks/useLegendsVisibility';
 import { useInitializeFromUrl } from './hooks/useInitializeFromUrl';
 import { useSessionPersistence } from './hooks/useSessionPersistence';
 import { SiderProvider } from '@contexts/SiderContext';
@@ -41,22 +40,20 @@ const Maps = () => {
                 <p className="sr-only">
                     Herramienta oficial del Instituto de Información Estadística y Geográfica de Jalisco (MapaMex) para visualizar el mapa de Jalisco con capas temáticas: temperatura, precipitación, recursos naturales, eventos, infraestructura y datos estadísticos del estado.
                 </p>
-                <LegendsVisibilityProvider>
-                    <div className="relative w-full h-dvh">
-                        <MapSider />
-                        <MunicipioActiveChip />
-                        <MapLayersPanels />
-                        <LayerDetailModal />
-                        <InfoBox />
-                        <MapAttribution />
-                        <MapLegend />
-                        <MapBottomLeftStack />
-                        {!isComparing && <MeasurementTools />}
-                        {isComparing ? <SwipeView /> : <MapView />}
-                        {isComparing && <SwipeSlotControls />}
-                        <LayerNotices />
-                    </div>
-                </LegendsVisibilityProvider>
+                <div className="relative w-full h-dvh">
+                    <MapSider />
+                    <MunicipioActiveChip />
+                    <MapLayersPanels />
+                    <LayerDetailModal />
+                    <InfoBox />
+                    <MapAttribution />
+                    <MapLegend />
+                    <MapBottomLeftStack />
+                    {!isComparing && <MeasurementTools />}
+                    {isComparing ? <SwipeView /> : <MapView />}
+                    {isComparing && <SwipeSlotControls />}
+                    <LayerNotices />
+                </div>
             </ZenModeProvider>
         </SiderProvider>
     );

@@ -56,6 +56,7 @@ const SimpleDateSelector = ({ layerId, periodicity, rasterPeriodicity, onFilterA
     const onClearFilterRef = useRef(onClearFilter);
     const externalFilter = getSpecificFilter?.(layerId, filterName);
     const prevExternalFilterRef = useRef(externalFilter);
+    const isFirstApplyRunRef = useRef(true);
 
     useEffect(() => {
         onFilterApplyRef.current = onFilterApply;
@@ -94,6 +95,9 @@ const SimpleDateSelector = ({ layerId, periodicity, rasterPeriodicity, onFilterA
     }, [loopState?.currentKey, loopState?.isPlaying, loopState?.mode]);
 
     useEffect(() => {
+        const firstRun = isFirstApplyRunRef.current;
+        isFirstApplyRunRef.current = false;
+
         if (isRaster) {
             if (selectedYear !== null && selectedMonths.size > 0) {
                 const monthNum = [...selectedMonths][0];
@@ -106,7 +110,7 @@ const SimpleDateSelector = ({ layerId, periodicity, rasterPeriodicity, onFilterA
                 if (typeof yearData === 'string') {
                     onFilterApplyRef.current?.({ filterName, cqlFilter: yearData });
                 }
-            } else {
+            } else if (!firstRun) {
                 onClearFilterRef.current?.();
             }
             return;
@@ -128,7 +132,7 @@ const SimpleDateSelector = ({ layerId, periodicity, rasterPeriodicity, onFilterA
                 filterColumn: periodicityData?.filterColumn || 'fecha',
                 selections: Array.from(selections)
             });
-        } else {
+        } else if (!firstRun) {
             onClearFilterRef.current?.();
         }
     }, [selectedYear, selectedMonths, periodicityData, filterName, isRaster]);
@@ -256,7 +260,7 @@ const SimpleDateSelector = ({ layerId, periodicity, rasterPeriodicity, onFilterA
                     <YearBadge year={expandedYear} slot={slot} />
                 </div>
                 {!isSingleMonth && (
-                    <div className="flex flex-wrap gap-1">
+                    <div className="grid grid-cols-4 gap-1">
                         {availableMonthNums.map((monthNum) => {
                             const monthObj = MONTHS.find(m => m.num === monthNum);
                             const abbr = monthObj ? monthObj.name.slice(0, 3).toUpperCase() : monthNum;
@@ -272,7 +276,7 @@ const SimpleDateSelector = ({ layerId, periodicity, rasterPeriodicity, onFilterA
                                     key={`${expandedYear}-${monthNum}`}
                                     onClick={() => handleMonthToggle(monthNum)}
                                     className={`
-                                        shrink-0 px-4 py-2 rounded-2xl transition-all duration-200
+                                        px-4 py-2 rounded-2xl transition-all duration-200
                                         text-[12px]/[14px] text-numeralia font-medium font-sans
                                         ${isActive ? activeStyle : idleStyle}
                                     `}

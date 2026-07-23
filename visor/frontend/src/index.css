@@ -106,3 +106,16 @@ html::-webkit-scrollbar-thumb:hover {
         animation-timing-function: ease-out;
     }
 }
+
+@keyframes periodicity-flash {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 116, 0); }
+    50%      { box-shadow: 0 0 0 3px rgba(225, 29, 116, 0.65); }
+}
+
+.periodicity-flash {
+    animation: periodicity-flash 700ms ease-in-out 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .periodicity-flash { animation: none; }
+}

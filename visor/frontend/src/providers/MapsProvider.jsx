@@ -29,6 +29,7 @@ const MapsProvider = ({ children }) => {
     const [baseMapId, setBaseMapId] = useState('voyager');
     const [siderCollapsed, setSiderCollapsed] = useState(true);
     const [selectedLayer, setSelectedLayer] = useState(null);
+    const [periodicityRequest, setPeriodicityRequest] = useState(null);
     const [selectedFeatureInfo, setSelectedFeatureInfo] = useState(null);
     const [isLocating, setIsLocating] = useState(false);
     const queryFeaturesInPolygonRef = useRef(null);
@@ -96,7 +97,6 @@ const MapsProvider = ({ children }) => {
 
     const layerToggle = useLayerToggle({
         ...layerManagement,
-        setSelectedLayer,
         setSelectedLayerForSymbology: symbology.setSelectedLayerForSymbology,
         applyFilter: cqlFilter.applyFilter,
         clearFilter: cqlFilter.clearFilter,
@@ -250,6 +250,8 @@ const MapsProvider = ({ children }) => {
         basemaps: BASEMAPS,
         selectedLayer,
         setSelectedLayer,
+        periodicityRequest,
+        setPeriodicityRequest,
         onAnalytics: mapsAnalyticsEvent,
         selectedFeatureInfo,
         setSelectedFeatureInfo,
@@ -279,6 +281,7 @@ const MapsProvider = ({ children }) => {
         baseMapId,
         siderCollapsed,
         selectedLayer,
+        periodicityRequest,
         paneMapInstances,
         setPaneMapInstance,
         mapsAnalyticsEvent,

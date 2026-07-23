@@ -19,14 +19,6 @@ export const SLOT_PILL = {
     none: { bg: 'bg-white', border: 'border-slate-200', text: 'text-graphite', hover: 'hover:border-primary hover:text-primary-deep' },
 };
 
-export const computePeriodicityHint = (rasterPeriodicity) => {
-    if (!rasterPeriodicity || typeof rasterPeriodicity !== 'object') return null;
-    const values = Object.values(rasterPeriodicity);
-    if (!values.length) return null;
-    const hasMonthly = values.some(v => v && typeof v === 'object');
-    return hasMonthly ? 'Mensual' : 'Anual';
-};
-
 export const computeLabel = (filter, rasterPeriodicity) => {
     const desc = describeDateFilter({ filter, rasterPeriodicity });
     const label = formatLoopLabel(desc);

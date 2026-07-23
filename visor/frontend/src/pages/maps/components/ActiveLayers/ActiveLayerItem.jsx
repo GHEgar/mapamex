@@ -12,16 +12,11 @@ import { handleKeyActivate } from '@utils/a11y';
 import { DragHandle, LayerTitle, PinBadge, EventoLayerIcon } from './LayerItemHeader';
 import LayerBadge from '@mapsComponents/LayerBadge';
 import LayerDateControls from './LayerDateControls';
-import LayerItemMenu from './LayerItemMenu';
 import Icon from '@components/Icon';
 import SlotBadge from './SlotBadge';
 import PeriodicityPill from './PeriodicityPill';
-import { computeLabel, computePeriodicityHint } from './datePillHelpers';
+import { computeLabel } from './datePillHelpers';
 import { ACTIVE_LAYERS_PANEL_WIDTH } from '@pages/maps/helpers/mapFit';
-import { useWMSLegend } from '@hooksMaps/useWMSLegend';
-import { useLayerMetadata } from '@hooksMaps/useLayerMetadata';
-import { useLayerDownload } from '@hooksMaps/useLayerDownload';
-import DownloadMenu from '@mapsComponents/LayerDetailModal/components/DownloadMenu';
 
 const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
     const { loadingLayers } = useLayerLoading();
@@ -33,11 +28,10 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
         clearLayerFilters,
         getAllChildLayerIds,
         toggleLayerVisibility,
-        setSelectedLayer,
+        setPeriodicityRequest,
         getLoopState,
         toggleLoop,
         inferLoopConfig,
-        getFilter,
         getSpecificFilter,
         getLoopPrefs,
         setLoopIntervalMs,
@@ -47,9 +41,6 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
         removeLayerFromSlot,
         toggleLayerVisibilityInSlot,
         setLayerSlotMembership,
-        getLayerOpacity,
-        setLayerOpacity,
-        setActiveSlot,
         centerOnLayer,
         pulseLayer
     } = useMapsContext();
@@ -77,29 +68,18 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
 
     const itemRef = useRef(null);
     const [isHovered, setIsHovered] = useState(false);
-    const [menuOpen, setMenuOpen] = useState(false);
     const isSelected = selectedLayerForSymbology?.id === layer.id;
     const isExpanded = isSelected;
 
-    const { metadata, loading: metadataLoading } = useLayerMetadata((isExpanded || menuOpen) ? layer.id : null);
-    const download = useLayerDownload(layer.id, { getFilter, getSpecificFilter, metadata });
-    const canDownload = (isExpanded || menuOpen) && metadata?.capa_descargable !== false;
-
-    const showMenu = !isPinned && (isMobile || isHovered || menuOpen || download.menuOpen);
-    const showDelete = !isPinned && (isMobile || isHovered || isSelected || menuOpen || download.menuOpen);
+    const showVisibility = !isPinned && (isMobile || isHovered || isSelected);
+    const showDelete = !isPinned && (isMobile || isHovered || isSelected);
     const showHandle = !isPinned && (isSelected || (!isMobile && isHovered));
-    const handleDownloadClick = () => {
-        if (download.downloading) download.handleCancelDownload();
-        else download.setMenuOpen(p => !p);
-    };
 
     useEffect(() => {
         if (isSelected && itemRef.current) {
             itemRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
     }, [isSelected]);
-
-    const canOpenModal = layer.id !== 'curvas_de_nivel';
 
     const handleClickOnLayer = () => {
         const wasSelected = selectedLayerForSymbology?.id === layer.id;
@@ -129,11 +109,6 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
         toggleLayerVisibility(layer.id);
     };
 
-    const handleSetSelectedLayerClick = (e) => {
-        e.stopPropagation();
-        setSelectedLayer(layer);
-    };
-
     const loopState = getLoopState?.(layer.id);
     const isLooping = loopState?.isPlaying;
 
@@ -148,27 +123,13 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
         return !!(liveOk || aOk || bOk);
     }, [dateFilter, rasterPeriodicity, compareMode?.paneA?.filters, compareMode?.paneB?.filters, layer.id]);
 
-    const periodicityHint = useMemo(() => computePeriodicityHint(rasterPeriodicity), [rasterPeriodicity]);
     const liveDateLabel = useMemo(() => computeLabel(dateFilter, rasterPeriodicity).label, [dateFilter, rasterPeriodicity]);
 
     const showSlotChip = !!compareMode?.active && !!slotMembership;
-    const showTimeRow = compareMode?.active ? (isExpanded || hasAnyDateLabel) : (isExpanded || isLooping);
-    const headerPillLabel = liveDateLabel || periodicityHint;
-    const showHeaderPill = !compareMode?.active && !showTimeRow && !!headerPillLabel;
-    const headerPillTooltip = liveDateLabel ? `Fecha: ${liveDateLabel} — click para cambiar` : 'Capa con periodicidad — elige una fecha';
+    const showTimeRow = !!compareMode?.active && (isExpanded || hasAnyDateLabel);
+    const showHeaderPill = !compareMode?.active && !!liveDateLabel;
+    const headerPillTooltip = `Fecha: ${liveDateLabel} — click para cambiar`;
     const handleCycleSlot = (next) => setLayerSlotMembership?.(layer.id, next);
-
-    const effectiveOpacity = useMemo(() => {
-        const own = getLayerOpacity?.(layer.id) ?? 1;
-        if (own !== 1) return own;
-        if (layer.childIds?.length) {
-            for (const id of layer.childIds) {
-                const op = getLayerOpacity?.(id);
-                if (op != null && op !== 1) return op;
-            }
-        }
-        return own;
-    }, [getLayerOpacity, layer.id, layer.childIds]);
 
     const canPlayLoop = useMemo(() => {
         if (isLooping) return true;
@@ -177,7 +138,8 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
 
     const handleDateLabelClick = (e) => {
         e.stopPropagation();
-        setSelectedLayer(layer);
+        setSelectedLayerForSymbology(layer);
+        setPeriodicityRequest?.(layer.id);
     };
 
     const handlePlayClick = (e) => {
@@ -205,9 +167,6 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
         return false;
     }, [loadingLayers, layer.id, layer.childIds]);
 
-    const { hasLegend } = useWMSLegend();
-    const layerHasLegend = hasLegend(layer);
-
     return (
         <div
             ref={itemRef}
@@ -231,7 +190,7 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
                     {isPinned && <PinBadge />}
                     {showHandle && <DragHandle dragHandleProps={dragHandleProps} />}
                     {showHeaderPill && (
-                        <PeriodicityPill label={headerPillLabel} tooltip={headerPillTooltip} onClick={handleDateLabelClick} />
+                        <PeriodicityPill label={liveDateLabel} tooltip={headerPillTooltip} onClick={handleDateLabelClick} />
                     )}
                     {showSlotChip && (
                         <SlotBadge membership={slotMembership} onCycle={handleCycleSlot} layerId={layer.id} />
@@ -242,30 +201,17 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
                     {isLoading && !isLooping && (
                         <Loading visible={true} size="size-5" border="border-2" />
                     )}
-                    {showMenu && (
-                        <LayerItemMenu
-                            layerId={layer.id}
-                            open={menuOpen && !download.menuOpen}
-                            onToggle={() => setMenuOpen(o => !o)}
-                            onClose={() => setMenuOpen(false)}
-                            kebabRef={download.menuAnchorRef}
-                            visible={layer.visible}
-                            isLoading={isLoading}
-                            isLooping={isLooping}
-                            canOpenModal={canOpenModal}
-                            opacity={effectiveOpacity}
-                            hasLegend={layerHasLegend}
-                            slotMembership={slotMembership}
-                            activeSlot={compareMode?.activeSlot}
-                            canDownload={canDownload}
-                            metadataLoading={metadataLoading}
-                            isDownloading={download.downloading}
-                            onToggleVisibility={handleToggleVisibilityClick}
-                            onOpenDetails={handleSetSelectedLayerClick}
-                            onChangeOpacity={(v) => setLayerOpacity?.(layer.id, v)}
-                            onDownloadClick={handleDownloadClick}
-                            onSwitchSlot={setActiveSlot}
-                        />
+                    {showVisibility && (
+                        <Tooltip content={layer.visible ? 'Ocultar capa' : 'Mostrar capa'}>
+                            <button
+                                type="button"
+                                onClick={handleToggleVisibilityClick}
+                                className="p-1.5 rounded-full transition-colors cursor-pointer text-gray-500 hover:text-primary-deep hover:bg-primary-soft shrink-0"
+                                aria-label={layer.visible ? 'Ocultar capa' : 'Mostrar capa'}
+                            >
+                                <Icon name={layer.visible ? 'visible' : 'hide'} className="size-5" />
+                            </button>
+                        </Tooltip>
                     )}
                     {showDelete && (
                         <Tooltip content="Eliminar capa">
@@ -298,18 +244,6 @@ const ActiveLayerItem = ({ layer, dragHandleProps, isPinned = false }) => {
                         onPlay={handlePlayClick}
                         onInterval={handleIntervalClick}
                         onDirection={handleDirectionClick}
-                    />
-                )}
-
-                {canDownload && download.menuOpen && (
-                    <DownloadMenu
-                        open={download.menuOpen}
-                        anchorRef={download.menuAnchorRef}
-                        onClose={() => download.setMenuOpen(false)}
-                        isRaster={download.isRaster}
-                        hasDateFilter={download.hasDateFilter}
-                        availableMetadata={download.availableMetadata}
-                        onDownload={download.handleMenuDownload}
                     />
                 )}
             </div>

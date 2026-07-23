@@ -83,9 +83,6 @@ export const trackThemeChange = (theme) =>
 export const trackOpacityChange = (layerId, value) =>
     withMapInteraction('opacity_change', { layer_id: layerId, value: Math.round((value ?? 1) * 100) });
 
-export const trackLegendsToggle = (visible) =>
-    withMapInteraction('legends_toggle', { visible: !!visible });
-
 export const trackSwipeEnter = (orientation) =>
     withMapInteraction('swipe_enter', { orientation });
 
