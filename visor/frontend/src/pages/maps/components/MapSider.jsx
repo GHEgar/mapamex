@@ -241,7 +241,7 @@ const MapSider = ({ className = '' }) => {
                 ref={siderRef}
                 className={[
                     `absolute top-4 left-4 ${MAP_Z.PANELS} ${MAP_Z_MOBILE.PANELS} flex flex-col`,
-                    `max-h-[calc(100dvh-2rem)] bg-white shadow-lg ${isExpanded ? 'rounded-2xl' : (treatAsMobile && !isOpen ? 'rounded-full' : 'rounded-[2.75rem]')} overflow-visible`,
+                    `max-h-[calc(100dvh-2rem)] bg-white shadow-lg ${isExpanded ? 'rounded-2xl' : 'rounded-[2.75rem]'} overflow-visible`,
                     'transition-all duration-500',
                     className,
                 ].join(' ')}
