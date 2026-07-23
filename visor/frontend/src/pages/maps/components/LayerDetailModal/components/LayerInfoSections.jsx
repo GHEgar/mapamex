@@ -49,6 +49,15 @@ const normalizeMetodologia = (metadata) => {
     }];
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
+export const hasLayerInfoContent = (metadata) => {
+    if (!metadata) return false;
+    return normalizeFuentes(metadata).length > 0
+        || normalizeMetodologia(metadata).length > 0
+        || !!(metadata.texto_leyenda_juridico || metadata.tipo_mapa)
+        || (metadata.metadato?.length > 0);
+};
+
 const LayerInfoSections = ({ metadata, layerName }) => {
     if (!metadata) return null;
 

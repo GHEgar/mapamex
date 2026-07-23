@@ -2,14 +2,6 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { trackLayerDownload } from '@services/analyticsService';
 import { isRasterLayer, downloadSingleFormat, downloadWithMenu, getAvailableMetadata } from '@services/downloadService';
 
-const formatBytes = (bytes) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
-
-export { formatBytes };
-
 export const useLayerDownload = (layerId, { getFilter, getSpecificFilter, metadata } = {}) => {
     const [downloading, setDownloading] = useState(false);
     const [progress, setProgress] = useState(null);
