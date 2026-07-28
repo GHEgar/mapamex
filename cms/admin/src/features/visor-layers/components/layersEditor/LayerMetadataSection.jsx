@@ -13,11 +13,6 @@ const PICKER_BUCKET_SLUGS = ['visor', 'mapamex'];
 const UPLOAD_BUCKET_SLUGS = ['visor'];
 const VISOR_PREFIXES = ['metadata/txt/', 'metadata/xlsx/'];
 
-const TIPO_MAPA_OPTIONS = [
-    { value: 'MapaMex', label: 'MapaMex' },
-    { value: 'INEGI', label: 'INEGI' },
-];
-
 const FRECUENCIA_OPTIONS = [
     { value: 'Diaria', label: 'Diaria' },
     { value: 'Semanal', label: 'Semanal' },
@@ -343,14 +338,9 @@ export default function LayerMetadataSection({
                     <Form.Item
                         label="Tipo de mapa base"
                         name="tipo_mapa"
-                        extra="Origen cartográfico de la base territorial usada (MapaMex, INEGI, etc.). Aparece como referencia en la ficha legal."
+                        extra="Origen cartográfico de la base territorial usada. Aparece como referencia en la ficha legal."
                     >
-                        <Select
-                            allowClear
-                            options={TIPO_MAPA_OPTIONS}
-                            placeholder="MapaMex / INEGI"
-                            mode="combobox"
-                        />
+                        <Input placeholder="Origen de la base territorial" />
                     </Form.Item>
                     <Form.Item
                         label="Enlace al PDF/documento del mapa base"

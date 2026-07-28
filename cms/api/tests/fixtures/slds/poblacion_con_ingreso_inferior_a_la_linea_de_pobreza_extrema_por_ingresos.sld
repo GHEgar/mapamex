@@ -36,15 +36,6 @@
       </ogc:Filter>
 
       <sld:PolygonSymbolizer>
-
-        <sld:Geometry>
-          <ogc:Function name="property">
-            <ogc:Function name="env">
-              <ogc:Literal>geom</ogc:Literal>
-              <ogc:Literal>geom_mapamex</ogc:Literal>
-            </ogc:Function>
-          </ogc:Function>
-        </sld:Geometry>
         <sld:Fill>
           <sld:CssParameter name="fill">#FFF5DD</sld:CssParameter>
           <sld:CssParameter name="fill-opacity">1.0</sld:CssParameter>
@@ -78,15 +69,6 @@
       </ogc:Filter>
 
       <sld:PolygonSymbolizer>
-
-        <sld:Geometry>
-          <ogc:Function name="property">
-            <ogc:Function name="env">
-              <ogc:Literal>geom</ogc:Literal>
-              <ogc:Literal>geom_mapamex</ogc:Literal>
-            </ogc:Function>
-          </ogc:Function>
-        </sld:Geometry>
         <sld:Fill>
           <sld:CssParameter name="fill">#FFE56A</sld:CssParameter>
           <sld:CssParameter name="fill-opacity">1.0</sld:CssParameter>
@@ -120,15 +102,6 @@
       </ogc:Filter>
 
       <sld:PolygonSymbolizer>
-
-        <sld:Geometry>
-          <ogc:Function name="property">
-            <ogc:Function name="env">
-              <ogc:Literal>geom</ogc:Literal>
-              <ogc:Literal>geom_mapamex</ogc:Literal>
-            </ogc:Function>
-          </ogc:Function>
-        </sld:Geometry>
         <sld:Fill>
           <sld:CssParameter name="fill">#D3D000</sld:CssParameter>
           <sld:CssParameter name="fill-opacity">1.0</sld:CssParameter>
@@ -162,15 +135,6 @@
       </ogc:Filter>
 
       <sld:PolygonSymbolizer>
-
-        <sld:Geometry>
-          <ogc:Function name="property">
-            <ogc:Function name="env">
-              <ogc:Literal>geom</ogc:Literal>
-              <ogc:Literal>geom_mapamex</ogc:Literal>
-            </ogc:Function>
-          </ogc:Function>
-        </sld:Geometry>
         <sld:Fill>
           <sld:CssParameter name="fill">#95B200</sld:CssParameter>
           <sld:CssParameter name="fill-opacity">1.0</sld:CssParameter>
@@ -204,15 +168,6 @@
       </ogc:Filter>
 
       <sld:PolygonSymbolizer>
-
-        <sld:Geometry>
-          <ogc:Function name="property">
-            <ogc:Function name="env">
-              <ogc:Literal>geom</ogc:Literal>
-              <ogc:Literal>geom_mapamex</ogc:Literal>
-            </ogc:Function>
-          </ogc:Function>
-        </sld:Geometry>
         <sld:Fill>
           <sld:CssParameter name="fill">#5E9100</sld:CssParameter>
           <sld:CssParameter name="fill-opacity">1.0</sld:CssParameter>
@@ -246,15 +201,6 @@
       </ogc:Filter>
 
       <sld:PolygonSymbolizer>
-
-        <sld:Geometry>
-          <ogc:Function name="property">
-            <ogc:Function name="env">
-              <ogc:Literal>geom</ogc:Literal>
-              <ogc:Literal>geom_mapamex</ogc:Literal>
-            </ogc:Function>
-          </ogc:Function>
-        </sld:Geometry>
         <sld:Fill>
           <sld:CssParameter name="fill">#316D00</sld:CssParameter>
           <sld:CssParameter name="fill-opacity">1.0</sld:CssParameter>
@@ -288,15 +234,6 @@
       </ogc:Filter>
 
       <sld:PolygonSymbolizer>
-
-        <sld:Geometry>
-          <ogc:Function name="property">
-            <ogc:Function name="env">
-              <ogc:Literal>geom</ogc:Literal>
-              <ogc:Literal>geom_mapamex</ogc:Literal>
-            </ogc:Function>
-          </ogc:Function>
-        </sld:Geometry>
         <sld:Fill>
           <sld:CssParameter name="fill">#104A00</sld:CssParameter>
           <sld:CssParameter name="fill-opacity">1.0</sld:CssParameter>
@@ -320,15 +257,6 @@
       </ogc:Filter>
 
       <sld:PolygonSymbolizer>
-
-        <sld:Geometry>
-          <ogc:Function name="property">
-            <ogc:Function name="env">
-              <ogc:Literal>geom</ogc:Literal>
-              <ogc:Literal>geom_mapamex</ogc:Literal>
-            </ogc:Function>
-          </ogc:Function>
-        </sld:Geometry>
         <sld:Fill>
           <sld:CssParameter name="fill">#FFFFFF</sld:CssParameter>
           <sld:CssParameter name="fill-opacity">1.0</sld:CssParameter>
@@ -336,15 +264,6 @@
       </sld:PolygonSymbolizer>
 
       <sld:PolygonSymbolizer>
-
-        <sld:Geometry>
-          <ogc:Function name="property">
-            <ogc:Function name="env">
-              <ogc:Literal>geom</ogc:Literal>
-              <ogc:Literal>geom_mapamex</ogc:Literal>
-            </ogc:Function>
-          </ogc:Function>
-        </sld:Geometry>
         <sld:Fill>
           <sld:GraphicFill>
             <sld:Graphic>

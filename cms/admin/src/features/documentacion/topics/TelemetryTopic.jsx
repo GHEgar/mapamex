@@ -94,7 +94,7 @@ export default function TelemetryTopic() {
                 size="small"
             >
                 <Paragraph type="secondary" style={{ marginTop: 0, marginBottom: 12, fontSize: 12 }}>
-                    Eventos emitidos por el visor cuando el usuario activa el modo Vista por municipio (gated por <Text code>VITE_APP_ENV in [dev, beta]</Text>). Se envían vía <Text code>analyticsService.trackEvent</Text> al collector propio (Cms) y a GA4. La fuente <Text code>source</Text> indica si los polígonos se piden de <Text code>general:limite_municipal</Text> (mapamex) o <Text code>general:limite_municipal_inegi</Text> (inegi), derivado del switch MapaMex/INEGI del panel de capas activas.
+                    Eventos emitidos por el visor cuando el usuario activa el modo Vista por municipio (gated por <Text code>VITE_APP_ENV in [dev, beta]</Text>). Se envían vía <Text code>analyticsService.trackEvent</Text> al collector propio (Cms) y a GA4. Los polígonos se piden siempre de <Text code>general:limite_municipal</Text> (base geoestadística INEGI); el switch MapaMex/INEGI y el campo <Text code>source</Text> se retiraron.
                 </Paragraph>
                 <Table
                     rowKey="evento"

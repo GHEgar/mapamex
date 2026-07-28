@@ -227,7 +227,7 @@ VISOR_EXCEL_PRESET = {
     'Fuentes (texto largo)': 'fuentes_largo',
     'Fuente (Texto corto Descargable PDF)': 'fuentes_corto',
     'Fuentes (enlace)': 'fuentes_enlace',
-    'Tipo de mapa (MapaMex/INEGI)': 'tipo_mapa',
+    'Tipo de mapa': 'tipo_mapa',
     'Texto Leyenda Jurídico': 'texto_leyenda',
     'Tipo de mapa (enlace)': 'tipo_mapa_enlace',
     'Metadato .txt': 'metadato_txt',

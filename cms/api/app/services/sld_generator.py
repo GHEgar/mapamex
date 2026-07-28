@@ -7,18 +7,6 @@ Number = int | float
 Cut = Number | None
 
 
-GEOMETRY_BLOCK = """
-        <sld:Geometry>
-          <ogc:Function name="property">
-            <ogc:Function name="env">
-              <ogc:Literal>geom</ogc:Literal>
-              <ogc:Literal>geom_mapamex</ogc:Literal>
-            </ogc:Function>
-          </ogc:Function>
-        </sld:Geometry>
-""".rstrip()
-
-
 def _escape_text(value: Any) -> str:
     return html.escape(str(value), quote=False)
 
@@ -45,7 +33,6 @@ def _polygon_symbolizer(fill_hex: str, stroke: dict[str, Any]) -> str:
 
     return f"""
       <sld:PolygonSymbolizer>
-{GEOMETRY_BLOCK}
         <sld:Fill>
           <sld:CssParameter name="fill">{fill_hex}</sld:CssParameter>
           <sld:CssParameter name="fill-opacity">1.0</sld:CssParameter>
@@ -91,7 +78,6 @@ def _null_rule(attribute: str, null_style: dict[str, Any]) -> str:
       </ogc:Filter>
 
       <sld:PolygonSymbolizer>
-{GEOMETRY_BLOCK}
         <sld:Fill>
           <sld:CssParameter name="fill">{background_color}</sld:CssParameter>
           <sld:CssParameter name="fill-opacity">1.0</sld:CssParameter>
@@ -99,7 +85,6 @@ def _null_rule(attribute: str, null_style: dict[str, Any]) -> str:
       </sld:PolygonSymbolizer>
 
       <sld:PolygonSymbolizer>
-{GEOMETRY_BLOCK}
         <sld:Fill>
           <sld:GraphicFill>
             <sld:Graphic>
