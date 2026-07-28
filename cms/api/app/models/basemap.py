@@ -35,6 +35,7 @@ class Basemap(Base):
     subdomains = Column(JSON, nullable=True)
     labels_url = Column(Text, nullable=True)
     label_zoom_threshold = Column(Integer, nullable=True)
+    max_zoom = Column(Integer, nullable=True)
     wms_params = Column(JSON, nullable=True)
     thumbnail_url = Column(Text, nullable=True)
     orden = Column(Integer, nullable=False, default=0)

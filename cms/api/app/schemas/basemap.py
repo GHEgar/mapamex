@@ -18,6 +18,7 @@ class BasemapBase(CamelCaseInput):
     subdomains: list[str] | None = None
     labels_url: str | None = Field(default=None, serialization_alias="labelsUrl")
     label_zoom_threshold: int | None = Field(default=None, serialization_alias="labelZoomThreshold")
+    max_zoom: int | None = Field(default=None, ge=0, le=24, serialization_alias="maxZoom")
     wms_params: dict | None = Field(default=None, serialization_alias="wmsParams")
     thumbnail_url: str | None = Field(default=None, serialization_alias="thumbnailUrl")
     orden: int = 0
@@ -37,6 +38,7 @@ class BasemapUpdate(CamelCaseInput):
     subdomains: list[str] | None = None
     labels_url: str | None = Field(default=None, serialization_alias="labelsUrl")
     label_zoom_threshold: int | None = Field(default=None, serialization_alias="labelZoomThreshold")
+    max_zoom: int | None = Field(default=None, ge=0, le=24, serialization_alias="maxZoom")
     wms_params: dict | None = Field(default=None, serialization_alias="wmsParams")
     thumbnail_url: str | None = Field(default=None, serialization_alias="thumbnailUrl")
     orden: int | None = None
@@ -53,6 +55,7 @@ class BasemapResponse(BaseModel):
     subdomains: list[str] | None = None
     labels_url: str | None = Field(default=None, serialization_alias="labelsUrl")
     label_zoom_threshold: int | None = Field(default=None, serialization_alias="labelZoomThreshold")
+    max_zoom: int | None = Field(default=None, serialization_alias="maxZoom")
     wms_params: dict | None = Field(default=None, serialization_alias="wmsParams")
     thumbnail_url: str | None = Field(default=None, serialization_alias="thumbnailUrl")
     orden: int
@@ -72,6 +75,7 @@ class BasemapPublicResponse(BaseModel):
     subdomains: list[str] | None = None
     labels_url: str | None = Field(default=None, serialization_alias="labelsUrl")
     label_zoom_threshold: int | None = Field(default=None, serialization_alias="labelZoomThreshold")
+    max_zoom: int | None = Field(default=None, serialization_alias="maxZoom")
     wms_params: dict | None = Field(default=None, serialization_alias="wmsParams")
     thumbnail_url: str | None = Field(default=None, serialization_alias="thumbnailUrl")
 

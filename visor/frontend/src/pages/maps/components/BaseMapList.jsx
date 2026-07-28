@@ -28,7 +28,7 @@ const BaseMapList = ({ closeButton }) => {
                             className={`flex items-center gap-3 p-2 rounded-2xl border transition-colors cursor-pointer text-left ${active ? 'border-primary-deep bg-primary-soft/40' : 'border-transparent hover:bg-slate-100'}`}
                         >
                             <span className={`shrink-0 flex items-center justify-center size-11 rounded-xl bg-white border ${active ? 'border-primary' : 'border-slate-200'}`}>
-                                <Icon name={id} state={active ? 'hover' : 'normal'} className="size-7" />
+                                <Icon name={id} fallback="basemaps" state={active ? 'hover' : 'normal'} className="size-7" />
                             </span>
                             <span className={`flex-1 min-w-0 truncate text-[13px] font-sans ${active ? 'font-bold text-primary' : 'font-medium text-graphite'}`}>
                                 {label}

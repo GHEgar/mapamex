@@ -36,6 +36,7 @@ export default function BasemapFormModal({ open, basemap, onClose, onSaved }) {
                 subdomains: basemap?.subdomains || [],
                 labelsUrl: basemap?.labelsUrl || '',
                 labelZoomThreshold: basemap?.labelZoomThreshold ?? null,
+                maxZoom: basemap?.maxZoom ?? null,
                 wmsParams: basemap?.wmsParams ? JSON.stringify(basemap.wmsParams, null, 2) : '',
                 thumbnailUrl: basemap?.thumbnailUrl || '',
                 orden: basemap?.orden ?? 0,
@@ -79,6 +80,7 @@ export default function BasemapFormModal({ open, basemap, onClose, onSaved }) {
             subdomains: isXyz && values.subdomains?.length ? values.subdomains : null,
             labelsUrl: isXyz ? (values.labelsUrl || null) : null,
             labelZoomThreshold: isXyz ? (values.labelZoomThreshold ?? null) : null,
+            maxZoom: isXyz ? (values.maxZoom ?? null) : null,
             wmsParams,
             thumbnailUrl: values.thumbnailUrl || null,
             orden: values.orden ?? 0,
@@ -139,7 +141,7 @@ export default function BasemapFormModal({ open, basemap, onClose, onSaved }) {
                     <Form.Item
                         name="url"
                         label={type === 'wms' ? 'URL base del servicio WMS' : 'Plantilla de tiles XYZ'}
-                        extra={type === 'wms' ? 'URL del endpoint WMS (…/wms).' : 'Plantilla con {z}/{x}/{y}. Usa {r} para retina y {s} para subdominios.'}
+                        extra={type === 'wms' ? 'URL del endpoint WMS (…/wms).' : 'Plantilla con {z}/{x}/{y}. Para subdominios: {s} con la lista de abajo, o un rango tipo {a-c} / {1-4}.'}
                         rules={[{ required: true, message: 'Requerido' }]}
                     >
                         <Input placeholder={type === 'wms' ? 'https://…/wms' : 'https://…/{z}/{x}/{y}{r}.png'} />
@@ -154,7 +156,18 @@ export default function BasemapFormModal({ open, basemap, onClose, onSaved }) {
                         <Form.Item name="labelsUrl" label="Overlay de etiquetas — URL (opcional)" extra="Capa de labels separada (p. ej. voyager_only_labels).">
                             <Input placeholder="https://…only_labels/{z}/{x}/{y}{r}.png" />
                         </Form.Item>
-                        <Form.Item name="labelZoomThreshold" label="Umbral de zoom para etiquetas (opcional)">
+                        <Form.Item
+                            name="labelZoomThreshold"
+                            label="Umbral de zoom para etiquetas (opcional)"
+                            extra="El overlay se muestra desde este zoom. Usa 1 para que siempre esté visible (0 lo desactiva)."
+                        >
+                            <InputNumber min={0} max={24} style={{ width: '100%' }} />
+                        </Form.Item>
+                        <Form.Item
+                            name="maxZoom"
+                            label="Zoom máximo del proveedor (opcional)"
+                            extra="Último nivel con teselas reales; más allá el visor estira la última tesela en vez de dejar el mapa en blanco."
+                        >
                             <InputNumber min={0} max={24} style={{ width: '100%' }} />
                         </Form.Item>
                     </>

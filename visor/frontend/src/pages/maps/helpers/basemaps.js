@@ -41,12 +41,21 @@ export const BASEMAP_ORDER = [
     'sin_visor'
 ];
 
-const buildXYZSource = (url, attributions, subdomains) => new XYZ({
-    url,
-    attributions: attributions || undefined,
-    subdomains: (Array.isArray(subdomains) && subdomains.length) ? subdomains : undefined,
-    crossOrigin: 'anonymous',
-});
+const buildXYZSource = (url, attributions, subdomains, maxZoom) => {
+    const options = {
+        attributions: attributions || undefined,
+        crossOrigin: 'anonymous',
+    };
+    if (maxZoom != null) options.maxZoom = maxZoom;
+
+    const subs = Array.isArray(subdomains) ? subdomains.filter(Boolean) : [];
+    if (subs.length && url.includes('{s}')) {
+        options.urls = subs.map(s => url.replaceAll('{s}', s));
+    } else {
+        options.url = url;
+    }
+    return new XYZ(options);
+};
 
 const buildWMSSource = (url, params) => new TileWMS({
     url,
@@ -71,10 +80,10 @@ const buildBasemapEntry = (cfg) => {
         id: cfg.slug,
         label: cfg.label,
         type: 'xyz',
-        create: () => (cfg.url ? buildXYZSource(cfg.url, cfg.attributions, cfg.subdomains) : null),
+        create: () => (cfg.url ? buildXYZSource(cfg.url, cfg.attributions, cfg.subdomains, cfg.maxZoom) : null),
     };
     if (cfg.labelsUrl) {
-        entry.createLabelsOverlay = () => buildXYZSource(cfg.labelsUrl, cfg.attributions, cfg.subdomains);
+        entry.createLabelsOverlay = () => buildXYZSource(cfg.labelsUrl, cfg.attributions, cfg.subdomains, cfg.maxZoom);
         if (cfg.labelZoomThreshold != null) entry.labelZoomThreshold = cfg.labelZoomThreshold;
     }
     return entry;

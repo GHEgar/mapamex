@@ -1,5 +1,7 @@
 import {
+    Anchor,
     ArrowLeftRight,
+    Bike,
     Bug,
     ChartLine,
     Check,
@@ -23,6 +25,8 @@ import {
     EllipsisVertical,
     Eye,
     EyeOff,
+    Flame,
+    Footprints,
     Gauge,
     Globe,
     GraduationCap,
@@ -42,7 +46,11 @@ import {
     Mars,
     Maximize,
     Minus,
+    Moon,
+    Mountain,
+    MountainSnow,
     Move,
+    Orbit,
     PanelLeftClose,
     PanelLeftOpen,
     Pause,
@@ -61,9 +69,13 @@ import {
     Shield,
     Smartphone,
     Smile,
+    Snowflake,
     Sparkles,
     Spline,
     SquareDashed,
+    Sun,
+    TrafficCone,
+    TrainFront,
     Trash2,
     Trees,
     TriangleAlert,
@@ -171,13 +183,27 @@ const icons = {
     satelite: { c: Satellite, colors: { normal: 'text-graphite' } },
     position: { c: Map, colors: { normal: 'text-graphite' } },
     voyager: { c: Compass, colors: { normal: 'text-graphite' } },
+    osm: { c: Map, colors: { normal: 'text-graphite' } },
+    carto_positron: { c: Sun, colors: { normal: 'text-graphite' } },
+    carto_dark_matter: { c: Moon, colors: { normal: 'text-graphite' } },
+    esri_world_imagery: { c: Satellite, colors: { normal: 'text-graphite' } },
+    esri_world_topo: { c: Mountain, colors: { normal: 'text-graphite' } },
+    opentopomap: { c: MountainSnow, colors: { normal: 'text-graphite' } },
+    openseamap: { c: Anchor, colors: { normal: 'text-graphite' } },
+    openrailwaymap: { c: TrainFront, colors: { normal: 'text-graphite' } },
+    waymarked_trails: { c: Footprints, colors: { normal: 'text-graphite' } },
+    opensnowmap: { c: Snowflake, colors: { normal: 'text-graphite' } },
+    cyclosm: { c: Bike, colors: { normal: 'text-graphite' } },
+    strava_heatmap: { c: Flame, colors: { normal: 'text-graphite' } },
+    nasa_gibs: { c: Orbit, colors: { normal: 'text-graphite' } },
+    waze: { c: TrafficCone, colors: { normal: 'text-graphite' } },
     hombre: { c: Mars, colors: { normal: 'text-graphite' } },
     mujer: { c: Venus, colors: { normal: 'text-graphite' } },
     raster: { c: Satellite, colors: { normal: 'text-graphite' } },
     mundial: { c: Globe, colors: { normal: 'text-graphite' } },
 };
 
-const Icon = ({ name, className = '', classNameBG = '', state = 'normal', visible = true, tooltip = null, onClick = null }) => {
+const Icon = ({ name, fallback = null, className = '', classNameBG = '', state = 'normal', visible = true, tooltip = null, onClick = null }) => {
     if (!visible) return null;
 
     const positioningClasses = ['absolute', 'fixed', 'relative', 'sticky', 'top-', 'bottom-', 'left-', 'right-', 'inset-', 'z-'];
@@ -196,8 +222,9 @@ const Icon = ({ name, className = '', classNameBG = '', state = 'normal', visibl
     let iconElement = null;
     const iconClassName = iconClasses.join(' ');
 
-    if (icons[name]) {
-        const entry = icons[name];
+    const entry = icons[name] || (fallback ? icons[fallback] : null);
+
+    if (entry) {
         const IconComponent = entry.states?.[state] || entry.c || entry;
         const hasTextColor = /(?:^|\s)text-/.test(iconClassName);
         const hasSize = /(?:^|\s)(?:w-|h-|size-)/.test(iconClassName);
