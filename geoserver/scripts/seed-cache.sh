@@ -8,7 +8,7 @@ FORMAT="${SEED_FORMAT:-image/png}"
 THREADS="${SEED_THREADS:-2}"
 BOUNDS="${SEED_BOUNDS:--11766470.18,2149050.11,-11295588.73,2601813.23}"
 EXPIRE_CLIENTS="${SEED_EXPIRE_CLIENTS:-86400}"
-SEED_LAYERS="${SEED_LAYERS:-general:curvas_de_nivel=11-15 raster:hillshade_mapamex_cog=6-14 raster:hillshade_inegi_cog=6-14}"
+SEED_LAYERS="${SEED_LAYERS:-general:curvas_de_nivel=11-15 raster:hillshade_cog=6-14}"
 SEED_LAYERS_FILE="${SEED_LAYERS_FILE:-}"
 STATUS_FILE="${SEED_STATUS_FILE:-/tmp/seed-status}"
 
