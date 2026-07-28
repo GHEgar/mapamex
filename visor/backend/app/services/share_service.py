@@ -13,7 +13,6 @@ MAX_PAYLOAD_BYTES = 256 * 1024
 ALLOWED_ANNOTATION_TYPES = {"LineString", "Polygon", "Freehand", "Text", "Emoji"}
 MAX_ANNOTATIONS = 200
 MAX_COORDINATES_PER_GEOMETRY = 2000
-ALLOWED_MUNICIPIO_SOURCES = {"mapamex", "inegi"}
 MAX_MUNICIPIOS = 125
 
 
@@ -132,9 +131,6 @@ def _validate_municipios(municipios: Any, source: str) -> None:
         return
     if not isinstance(municipios, dict):
         raise ValueError(f"{source}.municipios debe ser objeto")
-    src = municipios.get("source")
-    if src is not None and src not in ALLOWED_MUNICIPIO_SOURCES:
-        raise ValueError(f"{source}.municipios.source debe ser uno de {sorted(ALLOWED_MUNICIPIO_SOURCES)}")
     selected = municipios.get("selected")
     if not isinstance(selected, list) or len(selected) == 0:
         raise ValueError(f"{source}.municipios.selected debe ser lista no vacia")

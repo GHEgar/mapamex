@@ -75,28 +75,25 @@ class TestMunicipios:
         return _envelope('single', {'layers': [], 'municipios': municipios}, version=2)
 
     def test_acepta_municipios_basico(self):
-        kind, _ = validate_payload(self._payload_single({'source': 'mapamex', 'selected': ['14039', '14120']}))
+        kind, _ = validate_payload(self._payload_single({'selected': ['14039', '14120']}))
         assert kind == 'single'
 
-    def test_acepta_source_inegi(self):
-        kind, _ = validate_payload(self._payload_single({'source': 'inegi', 'selected': ['14039']}))
+    @pytest.mark.parametrize('source', ['mapamex', 'inegi', 'foo'])
+    def test_tolera_source_legacy(self, source):
+        kind, _ = validate_payload(self._payload_single({'source': source, 'selected': ['14039']}))
         assert kind == 'single'
-
-    def test_rechaza_source_invalido(self):
-        with pytest.raises(ValueError, match='source debe ser uno de'):
-            validate_payload(self._payload_single({'source': 'foo', 'selected': ['14039']}))
 
     def test_rechaza_selected_vacio(self):
         with pytest.raises(ValueError, match='selected debe ser lista no vacia'):
-            validate_payload(self._payload_single({'source': 'mapamex', 'selected': []}))
+            validate_payload(self._payload_single({'selected': []}))
 
     def test_rechaza_clave_no_string(self):
         with pytest.raises(ValueError, match='cada clave debe ser string'):
-            validate_payload(self._payload_single({'source': 'mapamex', 'selected': [14039]}))
+            validate_payload(self._payload_single({'selected': [14039]}))
 
     def test_acepta_municipios_en_swipe_shared(self):
         env = _envelope('swipe', {
-            'shared': {'view': {'zoom': 8}, 'municipios': {'source': 'mapamex', 'selected': ['14039']}},
+            'shared': {'view': {'zoom': 8}, 'municipios': {'selected': ['14039']}},
             'paneA': {'layers': []}, 'paneB': {'layers': []},
             'activeSlot': 'A', 'position': 0.5,
         }, version=2)

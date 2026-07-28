@@ -81,15 +81,12 @@ def _normalize_municipios(municipios: dict | list | None) -> dict | None:
     if not municipios:
         return None
     if isinstance(municipios, list):
-        return {"source": "mapamex", "selected": [str(c) for c in municipios if c]}
+        return {"selected": [str(c) for c in municipios if c]}
     if isinstance(municipios, dict) and municipios.get("selected"):
-        source = municipios.get("source") or "mapamex"
-        if source not in ("mapamex", "inegi"):
-            source = "mapamex"
         selected = [str(c) for c in municipios["selected"] if c]
         if not selected:
             return None
-        return {"source": source, "selected": selected}
+        return {"selected": selected}
     return None
 
 
@@ -104,7 +101,6 @@ def _default_view(municipios: dict | None = None) -> dict:
                 bbox = MunicipiosRepository.get_union_bbox(
                     session=session,
                     claves=municipios['selected'],
-                    source=municipios.get('source', 'mapamex'),
                     target_srid=4326,
                 )
             if bbox:
@@ -226,7 +222,7 @@ def compare_years(
         items = resolve_municipios(query=municipio, limit=1)
         if not items:
             raise ValueError(f"No se encontró el municipio '{municipio}'. Usa el tool municipios para buscar.")
-        norm_municipios = {'source': 'mapamex', 'selected': [items[0]['clave']]}
+        norm_municipios = {'selected': [items[0]['clave']]}
 
     resolved_view = view or _default_view(norm_municipios)
 

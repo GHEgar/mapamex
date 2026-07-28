@@ -12,19 +12,10 @@ from app.utils.api_responses import api_responses
 
 router = APIRouter(prefix='/municipios', tags=['Municipios'])
 
-_VALID_SOURCES = {'mapamex', 'inegi'}
-
 
 def _get_session() -> Session:
     conn = DatabaseFactory.get_connection(DatabaseType.VISOR)
     return conn.get_session()
-
-
-def _normalize_source(source: str) -> str:
-    src = (source or '').lower().strip()
-    if src not in _VALID_SOURCES:
-        return 'mapamex'
-    return src
 
 
 def _hash_payload(payload) -> str:
@@ -40,8 +31,8 @@ def _hash_payload(payload) -> str:
     description=(
         "Devuelve la lista completa de municipios (~125) con su clave INEGI de 3 dígitos, "
         "nombre, región y áreas. Los datos vienen de la vista materializada "
-        "`visor.municipios`, que une `mapa_base.limite_municipal` (MapaMex) y "
-        "`mapa_base.limite_municipal_inegi`. Soporta `If-None-Match` con ETag. "
+        "`visor.municipios`, construida sobre `mapa_base.limite_municipal` (base "
+        "geoestadística INEGI). Soporta `If-None-Match` con ETag. "
         "La MV se refresca mensualmente (1º a las 05:00) desde database-jobs."
     ),
 )
@@ -78,24 +69,26 @@ def list_municipios(
 def get_geometries(
     response: Response,
     claves: str = Query(description='Claves de municipios separadas por coma (ej. 014,067)'),
-    source: str = Query(default='mapamex', description='Fuente: mapamex | inegi'),
+    source: Optional[str] = Query(
+        default=None,
+        deprecated=True,
+        description='Obsoleto: se ignora. Existía para elegir entre las bases MapaMex e INEGI.',
+    ),
 ):
     claves_list = [c.strip() for c in (claves or '').split(',') if c.strip()]
     if not claves_list:
         raise HTTPException(status_code=400, detail='Parámetro `claves` requerido')
     if len(claves_list) > 200:
         raise HTTPException(status_code=400, detail='Máximo 200 claves por request')
-    src = _normalize_source(source)
     with _get_session() as session:
-        features = MunicipiosRepository.get_geometries(session, claves_list, src)
+        features = MunicipiosRepository.get_geometries(session, claves_list)
         union_wkt, tolerance_used = MunicipiosRepository.get_union_wkt(
-            session, claves_list, src, tolerance_m=50.0, max_size_bytes=8000,
+            session, claves_list, tolerance_m=50.0, max_size_bytes=8000,
         )
-        union_bbox = MunicipiosRepository.get_union_bbox(session, claves_list, src)
+        union_bbox = MunicipiosRepository.get_union_bbox(session, claves_list)
     response.headers['Cache-Control'] = 'public, max-age=3600'
     return {
         'type': 'FeatureCollection',
-        'source': src,
         'features': features,
         'unionWkt': union_wkt,
         'unionSrid': 6368,

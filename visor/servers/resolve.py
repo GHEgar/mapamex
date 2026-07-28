@@ -205,4 +205,4 @@ def _resolve_municipio_selection(municipio: str | None) -> dict | None:
     items = resolve_municipios(query=municipio, limit=1)
     if not items:
         raise ValueError(f"No se encontró el municipio '{municipio}'. Usa el tool municipios para buscar.")
-    return {'source': 'mapamex', 'selected': [items[0]['clave']]}
+    return {'selected': [items[0]['clave']]}

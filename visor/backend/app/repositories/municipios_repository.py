@@ -5,16 +5,6 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 
-_GEOM_COLUMN = {
-    'mapamex': 'geom_mapamex',
-    'inegi': 'geom_inegi',
-}
-
-
-def _resolve_geom_column(source: str) -> str:
-    return _GEOM_COLUMN.get((source or '').lower(), 'geom_mapamex')
-
-
 class MunicipiosRepository:
 
     @staticmethod
@@ -41,18 +31,16 @@ class MunicipiosRepository:
     def get_geometries(
         session: Session,
         claves: list[str],
-        source: str = 'mapamex',
         target_srid: int = 3857,
     ) -> list[dict]:
         if not claves:
             return []
-        geom_col = _resolve_geom_column(source)
         result = session.execute(
             text(
-                f'SELECT clave_geo, nombre, '
-                f'ST_AsGeoJSON(ST_Transform({geom_col}, :srid))::json AS geometry '
-                f'FROM visor.municipios '
-                f'WHERE clave_geo = ANY(:claves) AND {geom_col} IS NOT NULL'
+                'SELECT clave_geo, nombre, '
+                'ST_AsGeoJSON(ST_Transform(geom, :srid))::json AS geometry '
+                'FROM visor.municipios '
+                'WHERE clave_geo = ANY(:claves) AND geom IS NOT NULL'
             ),
             {'claves': list(claves), 'srid': target_srid},
         )
@@ -75,22 +63,20 @@ class MunicipiosRepository:
     def get_union_wkt(
         session: Session,
         claves: list[str],
-        source: str = 'mapamex',
         tolerance_m: float = 50.0,
         target_srid: Optional[int] = None,
         max_size_bytes: int = 8000,
     ) -> tuple[Optional[str], Optional[float]]:
         if not claves:
             return None, None
-        geom_col = _resolve_geom_column(source)
         if target_srid:
-            geom_expr = f'ST_Transform(ST_Union(ST_SimplifyPreserveTopology({geom_col}, :tol)), :srid)'
+            geom_expr = 'ST_Transform(ST_Union(ST_SimplifyPreserveTopology(geom, :tol)), :srid)'
         else:
-            geom_expr = f'ST_Union(ST_SimplifyPreserveTopology({geom_col}, :tol))'
+            geom_expr = 'ST_Union(ST_SimplifyPreserveTopology(geom, :tol))'
         sql = (
             f'SELECT ST_AsText({geom_expr}) AS wkt '
             f'FROM visor.municipios '
-            f'WHERE clave_geo = ANY(:claves) AND {geom_col} IS NOT NULL'
+            f'WHERE clave_geo = ANY(:claves) AND geom IS NOT NULL'
         )
 
         tolerances = [tolerance_m, 100.0, 250.0, 500.0, 1000.0, 2000.0, 5000.0]
@@ -116,13 +102,13 @@ class MunicipiosRepository:
                 return wkt, tol
 
         if target_srid:
-            envelope_expr = f'ST_AsText(ST_Transform(ST_Envelope(ST_Union({geom_col})), :srid))'
+            envelope_expr = 'ST_AsText(ST_Transform(ST_Envelope(ST_Union(geom)), :srid))'
         else:
-            envelope_expr = f'ST_AsText(ST_Envelope(ST_Union({geom_col})))'
+            envelope_expr = 'ST_AsText(ST_Envelope(ST_Union(geom)))'
         envelope_sql = (
             f'SELECT {envelope_expr} AS wkt '
             f'FROM visor.municipios '
-            f'WHERE clave_geo = ANY(:claves) AND {geom_col} IS NOT NULL'
+            f'WHERE clave_geo = ANY(:claves) AND geom IS NOT NULL'
         )
         envelope_params = {'claves': list(claves)}
         if target_srid:
@@ -137,21 +123,19 @@ class MunicipiosRepository:
     def get_union_bbox(
         session: Session,
         claves: list[str],
-        source: str = 'mapamex',
         target_srid: Optional[int] = None,
     ) -> Optional[list[float]]:
         if not claves:
             return None
-        geom_col = _resolve_geom_column(source)
         if target_srid:
-            geom_expr = f'ST_Transform(ST_Envelope(ST_Union({geom_col})), :srid)'
+            geom_expr = 'ST_Transform(ST_Envelope(ST_Union(geom)), :srid)'
         else:
-            geom_expr = f'ST_Envelope(ST_Union({geom_col}))'
+            geom_expr = 'ST_Envelope(ST_Union(geom))'
         sql = (
             f'SELECT ST_XMin({geom_expr}), ST_YMin({geom_expr}), '
             f'ST_XMax({geom_expr}), ST_YMax({geom_expr}) '
             f'FROM visor.municipios '
-            f'WHERE clave_geo = ANY(:claves) AND {geom_col} IS NOT NULL'
+            f'WHERE clave_geo = ANY(:claves) AND geom IS NOT NULL'
         )
         params: dict = {'claves': list(claves)}
         if target_srid:
