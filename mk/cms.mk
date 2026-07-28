@@ -9,6 +9,7 @@ CMS_TARJETITAS_DIR := backups/tarjetitas
 
 .PHONY: help-cms cms-up cms-build cms-deploy cms-down cms-logs cms-shell-api cms-shell-admin \
         cms-setup cms-setup-hooks cms-test-backend cms-clean \
+        cms-migrate cms-migrate-status _cms-migrate-report \
         cms-backup-tarjetitas cms-restore-tarjetitas cms-refresh-visor-stats cms-purge-visor-events
 
 help-cms:
@@ -23,6 +24,8 @@ help-cms:
 	@echo "  make cms-setup                  Crea archivos .env iniciales si no existen"
 	@echo "  make cms-setup-hooks            Configura git hooks (core.hooksPath)"
 	@echo "  make cms-test-backend           Lint + pytest del backend (mismo entorno que CI)"
+	@echo "  make cms-migrate                Sincroniza imagen de api + alembic upgrade head + invalida cache del visor"
+	@echo "  make cms-migrate-status         Estado de migraciones alembic del CMS"
 	@echo "  make cms-clean                  Elimina contenedores, redes y volumenes (¡Cuidado!)"
 	@echo "  make cms-backup-tarjetitas      Exporta infobox_config de TODAS las capas (prod)"
 	@echo "  make cms-restore-tarjetitas [FILE=...]  Aplica un export de tarjetitas (prod; backup previo + confirmacion)"
@@ -89,6 +92,64 @@ cms-setup:
 		echo -e "$(C_GREEN)Creado .env.production desde ejemplo$(C_RESET)"; \
 	else \
 		echo -e "$(C_YELLOW).env.production ya existe$(C_RESET)"; \
+	fi
+
+# =============================================================================
+# MIGRACIONES (alembic de cms/api, esquema `cms`)
+# =============================================================================
+
+## El contenedor api corre `alembic upgrade head` al arrancar (init_db.py), pero
+## las migraciones viven dentro de la imagen: sin resincronizarla, una migracion
+## nueva del repo no existe para el contenedor. Por eso se hace build/pull antes.
+cms-migrate:
+	@printf "$(C_BOLD)» Sincronizando imagen de api con el repo...$(C_RESET)\n"
+ifeq ($(DEPLOY_MODE),pull)
+	@cd $(CMS_DIR) && API_ENV_FILE=$(CMS_ENV_PROD) $(CMS_COMPOSE_PROD) pull api
+else
+	@cd $(CMS_DIR) && COMPOSE_BAKE=true API_ENV_FILE=$(CMS_ENV_PROD) $(CMS_COMPOSE_PROD) build api
+endif
+	@cd $(CMS_DIR) && API_ENV_FILE=$(CMS_ENV_PROD) $(CMS_COMPOSE_PROD) up -d api
+	@printf "\n$(C_BOLD)» Estado antes de migrar$(C_RESET)\n"
+	@$(MAKE) _cms-migrate-report
+	@printf "\n$(C_BOLD)» Aplicando migraciones alembic pendientes...$(C_RESET)\n"
+	@cd $(CMS_DIR) && API_ENV_FILE=$(CMS_ENV_PROD) $(CMS_COMPOSE_PROD) exec -T api alembic upgrade head
+	@printf "\n$(C_BOLD)» Estado despues de migrar$(C_RESET)\n"
+	@$(MAKE) _cms-migrate-report
+	@printf "\n$(C_BOLD)» Invalidando cache publico del visor$(C_RESET)\n"
+	@cd $(CMS_DIR) && API_ENV_FILE=$(CMS_ENV_PROD) $(CMS_COMPOSE_PROD) exec -T api python scripts/invalidate_visor_cache.py
+	@printf "$(C_GREEN)OK$(C_RESET)\n"
+
+cms-migrate-status:
+	@printf "$(C_BOLD)» Estado de migraciones alembic (cms)$(C_RESET)\n"
+	@$(MAKE) _cms-migrate-report
+
+_cms-migrate-report:
+	@cd $(CMS_DIR) && if ! err=$$(API_ENV_FILE=$(CMS_ENV_PROD) $(CMS_COMPOSE_PROD) exec -T api true 2>&1 >/dev/null); then \
+	  printf "  $(C_YELLOW)! No se pudo acceder al contenedor 'api'.$(C_RESET)\n"; \
+	  reason=$$(printf '%s\n' "$$err" | grep -iE 'invalid spec|is not set|no such|not running|no configuration' | tail -1 || true); \
+	  if [ -n "$$reason" ]; then printf "  $(C_DIM)Motivo: %s$(C_RESET)\n" "$$reason"; fi; \
+	  if printf '%s' "$$err" | grep -qiE 'invalid spec|is not set'; then \
+	    printf "  $(C_DIM)Falta cargar el .env (variables vacias). Verifica que exista $(CMS_ENV_PROD) en cms/.$(C_RESET)\n"; \
+	  else \
+	    printf "  $(C_DIM)Levantalo con 'make cms-deploy' o 'make cms-migrate'.$(C_RESET)\n"; \
+	  fi; \
+	else \
+	  API_ENV_FILE=$(CMS_ENV_PROD) $(CMS_COMPOSE_PROD) exec -T api alembic history --indicate-current 2>/dev/null | awk \
+	  -v cur='$(C_CYAN)' -v pen='$(C_YELLOW)' -v app='$(C_DIM)' \
+	  -v grn='$(C_GREEN)' -v bold='$(C_BOLD)' -v rst='$(C_RESET)' '\
+	  { if ($$0 ~ /^[[:space:]]*$$/) next; \
+	    n++; arr[n]=$$0; if (index($$0,"(current)")>0) curidx=n } \
+	  END { \
+	    if (n==0) { printf "  %s(sin historial de migraciones)%s\n", app, rst; exit } \
+	    if (curidx==0) pend=n; else pend=curidx-1; \
+	    if (pend==0) printf "  %s* Al dia%s -- %d migracion(es) aplicada(s), 0 pendientes\n\n", grn, rst, n; \
+	    else printf "  %s* %d pendiente(s)%s de %d totales\n\n", pen, pend, rst, n; \
+	    for (i=1;i<=n;i++) { \
+	      if (curidx>0 && i==curidx) printf "  %s%s>%s %s%s  (actual)%s\n", cur, bold, rst, cur, arr[i], rst; \
+	      else if (curidx==0 || i<curidx) printf "  %so %s  (pendiente)%s\n", pen, arr[i], rst; \
+	      else printf "  %s+ %s%s\n", app, arr[i], rst; \
+	    } \
+	  }' || true; \
 	fi
 
 # =============================================================================

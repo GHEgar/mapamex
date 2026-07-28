@@ -1,4 +1,4 @@
-.PHONY: help ensure-network ecosystem-up ecosystem-down ecosystem-deploy ecosystem-status ecosystem-backup ecosystem-restore ecosystem-commands
+.PHONY: help ensure-network ecosystem-up ecosystem-down ecosystem-deploy ecosystem-status ecosystem-backup ecosystem-restore ecosystem-migrate ecosystem-migrate-status ecosystem-commands
 
 .DEFAULT_GOAL := help
 
@@ -64,6 +64,13 @@ BACKUP_STEPS := \
     geoserver:$(GEOSERVER_DIR):geoserver-backup \
     storage:$(STORAGE_DIR):storage-backup
 
+# Migraciones alembic (formato: name:dir:target). Un proyecto alembic por base:
+#   database -> database/jobs/alembic  (esquemas del PostGIS: visor, mapa_base, ...)
+#   cms      -> cms/api/alembic        (esquema cms)
+MIGRATE_STEPS := \
+    database:$(DATABASE_DIR):database-migrate \
+    cms:$(CMS_DIR):cms-migrate
+
 # Restore de los servicios con estado (formato: name:dir:target:patrones-de-dump)
 # Los patrones (separados por coma) se buscan en RESTORE_SRC y se hardlinkean a <dir>/restore/.
 RESTORE_SRC ?= ../mapamex-docs/restore
@@ -83,6 +90,8 @@ help:
 	@echo "  make ecosystem-down        Detener todo el ecosistema en orden inverso"
 	@echo "  make ecosystem-deploy      Pull + down + deploy de todo el ecosistema"
 	@echo "  make ecosystem-status      Estado del ecosistema: git, docker y errores en logs"
+	@echo "  make ecosystem-migrate     Alembic upgrade head de todas las bases (database y cms)"
+	@echo "  make ecosystem-migrate-status  Estado de migraciones de todas las bases"
 	@echo "  make ecosystem-backup      Backup de todo con estado (database, cms, geoserver, storage)"
 	@echo "  make ecosystem-restore     Restore de todo con estado (hardlink de dumps + restores encadenados)"
 	@echo "  make ecosystem-commands    Ver todos los comandos por servicio"
@@ -302,6 +311,50 @@ ecosystem-backup:
 	 done; \
 	 echo -e "  $(C_DIM)------------------------------------------$(C_RESET)"; \
 	 printf "  $(C_BOLD)RESUMEN$(C_RESET)  $(C_GREEN)%d ok$(C_RESET)  $(C_RED)%d fallo$(C_RESET)\n\n" "$$ok" "$$fail"
+
+ecosystem-migrate:
+	@echo ""
+	@echo -e "  $(C_BOLD)ECOSISTEMA — MIGRACIONES$(C_RESET)  $(C_DIM)$$(date '+%Y-%m-%d %H:%M:%S')$(C_RESET)"
+	@echo -e "  $(C_DIM)------------------------------------------$(C_RESET)"
+	@STEPS="$(MIGRATE_STEPS)"; \
+	 FILTER="$(STACKS)"; \
+	 ok=0; fail=0; \
+	 for step in $$STEPS; do \
+	     name=$$(echo $$step | cut -d: -f1); \
+	     dir=$$(echo $$step | cut -d: -f2); \
+	     tgt=$$(echo $$step | cut -d: -f3); \
+	     if [ -n "$$FILTER" ] && ! echo ",$$FILTER," | grep -q ",$$name,"; then continue; fi; \
+	     if [ ! -d "$$dir" ]; then printf "  $(C_DIM)skip$(C_RESET)          %s\n" "$$name"; continue; fi; \
+	     echo ""; \
+	     echo -e "  $(C_BOLD)MIGRATE — $$name$(C_RESET)"; \
+	     echo -e "  $(C_DIM)------------------------------------------$(C_RESET)"; \
+	     if $(MAKE) $$tgt; then \
+	         printf "  $(C_GREEN)ok$(C_RESET)            %s\n" "$$name"; ok=$$((ok+1)); \
+	     else \
+	         printf "  $(C_RED)fail$(C_RESET)          %s\n" "$$name"; fail=$$((fail+1)); \
+	     fi; \
+	 done; \
+	 echo ""; \
+	 echo -e "  $(C_DIM)------------------------------------------$(C_RESET)"; \
+	 printf "  $(C_BOLD)RESUMEN$(C_RESET)  $(C_GREEN)%d ok$(C_RESET)  $(C_RED)%d fallo$(C_RESET)\n\n" "$$ok" "$$fail"; \
+	 [ "$$fail" -eq 0 ]
+
+ecosystem-migrate-status:
+	@echo ""
+	@echo -e "  $(C_BOLD)ECOSISTEMA — ESTADO DE MIGRACIONES$(C_RESET)"
+	@STEPS="$(MIGRATE_STEPS)"; \
+	 FILTER="$(STACKS)"; \
+	 for step in $$STEPS; do \
+	     name=$$(echo $$step | cut -d: -f1); \
+	     dir=$$(echo $$step | cut -d: -f2); \
+	     tgt=$$(echo $$step | cut -d: -f3); \
+	     if [ -n "$$FILTER" ] && ! echo ",$$FILTER," | grep -q ",$$name,"; then continue; fi; \
+	     if [ ! -d "$$dir" ]; then printf "  $(C_DIM)skip$(C_RESET)          %s\n" "$$name"; continue; fi; \
+	     echo ""; \
+	     echo -e "  $(C_BOLD)$$name$(C_RESET)"; \
+	     $(MAKE) $$tgt-status || true; \
+	 done; \
+	 echo ""
 
 ecosystem-restore:
 	@echo ""
