@@ -2,10 +2,6 @@ import GeoJSON from 'ol/format/GeoJSON';
 
 const API_HOST = (import.meta.env.VITE_BACKEND_API_HOST || '/api/').replace(/\/+$/, '');
 
-export const MUNICIPIO_SOURCES = ['mapamex', 'inegi'];
-
-const normalizeSource = (sourceId) => (MUNICIPIO_SOURCES.includes(sourceId) ? sourceId : 'mapamex');
-
 const listCache = new Map();
 const geomCache = new Map();
 
@@ -34,16 +30,13 @@ export const fetchMunicipiosList = async ({ signal, force = false } = {}) => {
 
 const EMPTY_RESULT = Object.freeze({ items: [], unionWkt: null, unionSrid: null, unionBbox: null });
 
-export const fetchMunicipiosGeometries = async (sourceId = 'mapamex', claves = [], { signal, force = false } = {}) => {
+export const fetchMunicipiosGeometries = async (claves = [], { signal, force = false } = {}) => {
     if (!Array.isArray(claves) || claves.length === 0) return EMPTY_RESULT;
-    const source = normalizeSource(sourceId);
-    const sortedKey = [...claves].map(String).sort().join(',');
-    const cacheKey = `${source}|${sortedKey}`;
+    const cacheKey = [...claves].map(String).sort().join(',');
     if (!force && geomCache.has(cacheKey)) {
         return geomCache.get(cacheKey);
     }
     const params = new URLSearchParams({
-        source,
         claves: claves.map(String).join(','),
     });
     const res = await fetch(`${API_HOST}/municipios/geometries?${params.toString()}`, { signal });

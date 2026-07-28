@@ -5,11 +5,9 @@ import { findWMSConfig, hasWMSConfig } from '@pages/maps/helpers/wmsConfig';
 import { fetchGeometryType } from '@utils/featureInfoUtils';
 
 const ALWAYS_ON_TOP_LAYER_IDS = new Set([
-    'limite_mapamex',
+    'limite_estatal',
     'limite_municipal',
-    'regiones',
-    'limite_inegi',
-    'limite_municipal_inegi'
+    'regiones'
 ]);
 
 const BACKGROUND_POLYGON_LAYER_NAMES = new Set([

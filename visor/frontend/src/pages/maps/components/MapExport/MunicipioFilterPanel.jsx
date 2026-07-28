@@ -29,7 +29,6 @@ const MunicipioFilterPanel = ({ municipioMode }) => {
         listLoading,
         geomLoading,
         error,
-        sourceId,
         loadList,
         exit,
         setScope,
@@ -52,7 +51,6 @@ const MunicipioFilterPanel = ({ municipioMode }) => {
         !q ? allMunicipios : allMunicipios.filter(m => normalize(m.nombre).includes(q) || String(m.clave).includes(q))
     ), [allMunicipios, q]);
 
-    const sourceLabel = sourceId === 'inegi' ? 'INEGI' : 'MapaMex';
     const isZmgActive = active && scope?.type === SCOPE_TYPES.ZMG;
     const isRegionActive = (nombre) => active && scope?.type === SCOPE_TYPES.REGION && scope.value === nombre;
     const isMunicipioActive = (clave) => active && scope?.type === SCOPE_TYPES.MUNICIPIO && String(scope.value) === String(clave);
@@ -69,7 +67,7 @@ const MunicipioFilterPanel = ({ municipioMode }) => {
                 <h3 className="block text-[18px]/[24px] font-sans font-bold text-primary tracking-normal">
                     Vista por municipio
                 </h3>
-                <span className="text-[10px] font-sans text-gray-400 tracking-normal">Fuente: {sourceLabel}</span>
+                <span className="text-[10px] font-sans text-gray-400 tracking-normal">Fuente: INEGI</span>
             </div>
 
             <div className="relative">

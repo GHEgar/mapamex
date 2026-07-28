@@ -17,7 +17,6 @@ import ScrollContainer from '@components/ScrollContainer';
 import { useMapsContext } from '@hooks/useMaps';
 import { useLayers } from '@hooks/useLayers';
 import { getDefaultMapView } from '@pages/maps/helpers/defaultView';
-import { isInegiBaseMode } from '@pages/maps/helpers/basemaps';
 
 const ActiveLayersListInner = ({ onCollapseChange, onActionsOpenChange }) => {
     const {
@@ -135,7 +134,6 @@ const ActiveLayersListInner = ({ onCollapseChange, onActionsOpenChange }) => {
 
     const { handleDragEnd } = useLayerSorting(effectiveActiveLayerIds, unifiedLayers, handleReorder);
     const sortableItems = useMemo(() => displayedLayers.map(l => l.id), [displayedLayers]);
-    const isInegiMode = useMemo(() => isInegiBaseMode(effectiveActiveLayerIds), [effectiveActiveLayerIds]);
 
     const noLayers = unifiedLayers.length === 0;
 
@@ -151,20 +149,6 @@ const ActiveLayersListInner = ({ onCollapseChange, onActionsOpenChange }) => {
     const activeLoopsCount = useMemo(() => {
         return Object.values(dateLoops || {}).filter(l => l?.isPlaying).length;
     }, [dateLoops]);
-
-    const handleToggleBaseMode = useCallback(() => {
-        if (activeLayerIds.length === 0) {
-            ['limite_mapamex', 'limite_municipal', 'regiones'].forEach(id => onToggleLayer(id, true, true));
-            return;
-        }
-        if (isInegiMode) {
-            ['limite_inegi', 'limite_municipal_inegi'].forEach(id => onToggleLayer(id, false, true));
-            ['regiones', 'limite_municipal', 'limite_mapamex'].forEach(id => onToggleLayer(id, true, true));
-        } else {
-            ['limite_mapamex', 'limite_municipal', 'regiones'].forEach(id => onToggleLayer(id, false, true));
-            ['limite_municipal_inegi', 'limite_inegi'].forEach(id => onToggleLayer(id, true, true));
-        }
-    }, [activeLayerIds.length, isInegiMode, onToggleLayer]);
 
     const [, setSearchParams] = useSearchParams();
 
@@ -227,11 +211,9 @@ const ActiveLayersListInner = ({ onCollapseChange, onActionsOpenChange }) => {
                         visibilityCount={visibilityCount}
                         hasActiveLoops={hasActiveLoops}
                         activeLoopsCount={activeLoopsCount}
-                        isInegiMode={isInegiMode}
                         onToggleVisibilityAll={handleToggleVisibilityAll}
                         onRemoveAll={handleRemoveAll}
                         onPauseAll={pauseAllLoops}
-                        onToggleBaseMode={handleToggleBaseMode}
                         onOpenSearch={() => setSearchOpen(true)}
                         onAnyPanelOpenChange={onActionsOpenChange}
                     />

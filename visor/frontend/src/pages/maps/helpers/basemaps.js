@@ -96,17 +96,14 @@ const GEOSERVER_BASE = (import.meta.env.VITE_GEOSERVER_URL || '').replace(/\/+$/
 
 const RELIEF_WORKSPACE = 'raster';
 
-const RELIEF_LAYERS = {
-    mapamex: 'hillshade_mapamex_cog',
-    inegi: 'hillshade_inegi_cog',
-};
+const RELIEF_LAYER = 'hillshade_cog';
 
 export const RELIEF_OVERLAY_Z_INDEX = 10000;
 
-const createReliefSource = (geoserverLayer) => new TileWMS({
+export const createReliefSource = () => new TileWMS({
     url: `${GEOSERVER_BASE}/${RELIEF_WORKSPACE}/wms`,
     params: {
-        LAYERS: `${RELIEF_WORKSPACE}:${geoserverLayer}`,
+        LAYERS: `${RELIEF_WORKSPACE}:${RELIEF_LAYER}`,
         TILED: true,
         FORMAT: 'image/png',
         TRANSPARENT: true,
@@ -116,13 +113,3 @@ const createReliefSource = (geoserverLayer) => new TileWMS({
     hidpi: false,
     crossOrigin: 'anonymous',
 });
-
-export const RELIEF_OVERLAY = {
-    mapamex: () => createReliefSource(RELIEF_LAYERS.mapamex),
-    inegi: () => createReliefSource(RELIEF_LAYERS.inegi),
-};
-
-const INEGI_LIMIT_LAYER_IDS = ['limite_inegi', 'limite_municipal_inegi'];
-
-export const isInegiBaseMode = (activeLayerIds = []) =>
-    activeLayerIds.some(id => INEGI_LIMIT_LAYER_IDS.includes(id));

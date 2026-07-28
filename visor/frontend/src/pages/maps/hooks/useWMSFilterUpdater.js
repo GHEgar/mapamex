@@ -4,14 +4,11 @@ import { findLayerById } from '../helpers/layers/utils/layerHelpers';
 import { buildLayerMunicipioCql } from '../helpers/municipioCqlBuilder';
 import { useLayers } from '@hooks/useLayers';
 
-const INEGI_LAYER_IDS = ['limite_inegi', 'limite_municipal_inegi'];
 const RASTER_WORKSPACES = new Set(['raster', 'lluvia', 'temperatura']);
 const EMPTY_MUNICIPIO_CTX = { active: false, claves: [], nombres: [], bbox: null };
 
-export const useWMSFilterUpdater = ({ mapRef, wmsLayersRef, filters, getFilter, combineCQLFilters, activeLayerIds, municipioContext = EMPTY_MUNICIPIO_CTX }) => {
+export const useWMSFilterUpdater = ({ mapRef, wmsLayersRef, filters, getFilter, combineCQLFilters, municipioContext = EMPTY_MUNICIPIO_CTX }) => {
     const { layers } = useLayers();
-    const activeLayerIdsRef = useRef(activeLayerIds);
-    activeLayerIdsRef.current = activeLayerIds;
     const municipioContextRef = useRef(municipioContext);
     municipioContextRef.current = municipioContext;
     const layersRef = useRef(layers);
@@ -20,8 +17,6 @@ export const useWMSFilterUpdater = ({ mapRef, wmsLayersRef, filters, getFilter, 
     useEffect(() => {
         if (!mapRef.current || !getFilter) return;
 
-        const isInegiMode = activeLayerIdsRef.current.some(id => INEGI_LAYER_IDS.includes(id));
-        const envParam = isInegiMode ? 'geom:geom_inegi' : 'geom:geom_iieg';
         const ctx = municipioContextRef.current;
         const layersTree = layersRef.current;
 
@@ -98,21 +93,19 @@ export const useWMSFilterUpdater = ({ mapRef, wmsLayersRef, filters, getFilter, 
 
                 const currentParams = source.getParams();
 
-                const envChanged = currentParams.ENV !== envParam;
-
                 if (timeValue !== undefined) {
                     const resolvedStyle = resolveTimeStyle(timeStylePattern, timeValue);
                     const timeChanged = currentParams.TIME !== timeValue;
                     const styleChanged = resolvedStyle && currentParams.STYLES !== resolvedStyle;
-                    if (timeChanged || styleChanged || envChanged) {
-                        const updates = { TIME: timeValue, CQL_FILTER: undefined, ENV: envParam };
+                    if (timeChanged || styleChanged) {
+                        const updates = { TIME: timeValue, CQL_FILTER: undefined };
                         if (resolvedStyle) updates.STYLES = resolvedStyle;
                         source.updateParams(updates);
                     }
                 } else {
                     const newCqlFilter = combinedFilter || undefined;
-                    if (currentParams.CQL_FILTER !== newCqlFilter || envChanged) {
-                        source.updateParams({ CQL_FILTER: newCqlFilter, TIME: undefined, ENV: envParam });
+                    if (currentParams.CQL_FILTER !== newCqlFilter) {
+                        source.updateParams({ CQL_FILTER: newCqlFilter, TIME: undefined });
                         source.refresh();
                     }
                 }

@@ -41,7 +41,7 @@ vi.mock('@hooks/useLayerLoading', () => ({
 }));
 
 vi.mock('@hooksMaps/useAlwaysOnTopPinning', () => ({
-    ALWAYS_ON_TOP_LAYER_IDS: new Set(['limite_mapamex', 'limite_municipal', 'regiones', 'limite_inegi', 'limite_municipal_inegi']),
+    ALWAYS_ON_TOP_LAYER_IDS: new Set(['limite_estatal', 'limite_municipal', 'regiones']),
     PIN_Z_OFFSET: 9000,
     useAlwaysOnTopPinning: () => new Set()
 }));
@@ -338,15 +338,15 @@ describe('useWMSLayerManager - pin layers', () => {
 
     it('respeta initialOrder entre múltiples pin-eadas', () => {
         const { props } = renderManager({
-            activeLayerIds: ['limite_mapamex', 'limite_municipal'],
-            pinnedLayerIds: new Set(['limite_mapamex', 'limite_municipal']),
-            initialOrder: ['limite_mapamex', 'limite_municipal']
+            activeLayerIds: ['limite_estatal', 'limite_municipal'],
+            pinnedLayerIds: new Set(['limite_estatal', 'limite_municipal']),
+            initialOrder: ['limite_estatal', 'limite_municipal']
         });
         const callsByRepId = Object.fromEntries(
             props.createWMSLayer.mock.calls.map(c => [c[0], c[2]])
         );
-        expect(callsByRepId['limite_mapamex']).toBeGreaterThan(callsByRepId['limite_municipal']);
-        expect(callsByRepId['limite_mapamex']).toBeGreaterThanOrEqual(9000);
+        expect(callsByRepId['limite_estatal']).toBeGreaterThan(callsByRepId['limite_municipal']);
+        expect(callsByRepId['limite_estatal']).toBeGreaterThanOrEqual(9000);
         expect(callsByRepId['limite_municipal']).toBeGreaterThanOrEqual(9000);
     });
 });

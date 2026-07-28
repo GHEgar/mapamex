@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
-    MUNICIPIO_SOURCES,
     fetchMunicipiosList,
     fetchMunicipiosGeometries,
     clearMunicipioCache,
@@ -25,12 +24,6 @@ describe('municipioService', () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
-    });
-
-    describe('MUNICIPIO_SOURCES', () => {
-        it('expone las fuentes disponibles', () => {
-            expect(MUNICIPIO_SOURCES).toEqual(['mapamex', 'inegi']);
-        });
     });
 
     describe('fetchMunicipiosList', () => {
@@ -71,17 +64,16 @@ describe('municipioService', () => {
 
     describe('fetchMunicipiosGeometries', () => {
         it('retorna estructura vacía si no hay claves', async () => {
-            const result = await fetchMunicipiosGeometries('mapamex', []);
+            const result = await fetchMunicipiosGeometries([]);
             expect(result).toEqual({ items: [], unionWkt: null, unionSrid: null, unionBbox: null });
             expect(global.fetch).not.toHaveBeenCalled();
         });
 
-        it('pide al endpoint /municipios/geometries con source y claves, devuelve items + unionWkt + unionBbox', async () => {
+        it('pide al endpoint /municipios/geometries con las claves, devuelve items + unionWkt + unionBbox', async () => {
             global.fetch.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({
                     type: 'FeatureCollection',
-                    source: 'mapamex',
                     features: [
                         { properties: { clave: '014', nombre: 'Guadalajara' }, geometry: { type: 'Polygon' } },
                     ],
@@ -90,10 +82,10 @@ describe('municipioService', () => {
                     unionBbox: [0, 0, 1, 1],
                 }),
             });
-            const result = await fetchMunicipiosGeometries('mapamex', ['014']);
+            const result = await fetchMunicipiosGeometries(['014']);
             const url = global.fetch.mock.calls[0][0];
             const params = new URL(url, 'http://x').searchParams;
-            expect(params.get('source')).toBe('mapamex');
+            expect(params.get('source')).toBeNull();
             expect(params.get('claves')).toBe('014');
             expect(result.items).toHaveLength(1);
             expect(result.items[0].clave).toBe('014');
@@ -110,28 +102,18 @@ describe('municipioService', () => {
                     unionBbox: 'no-array',
                 }),
             });
-            const result = await fetchMunicipiosGeometries('mapamex', ['014']);
+            const result = await fetchMunicipiosGeometries(['014']);
             expect(result.unionBbox).toBeNull();
         });
 
-        it('cachea por combinación source+claves', async () => {
+        it('cachea por combinación de claves', async () => {
             global.fetch.mockResolvedValue({
                 ok: true,
                 json: async () => ({ features: [{ properties: { clave: '014', nombre: 'X' }, geometry: {} }] }),
             });
-            await fetchMunicipiosGeometries('mapamex', ['014', '067']);
-            await fetchMunicipiosGeometries('mapamex', ['067', '014']);
+            await fetchMunicipiosGeometries(['014', '067']);
+            await fetchMunicipiosGeometries(['067', '014']);
             expect(global.fetch).toHaveBeenCalledTimes(1);
-        });
-
-        it('normaliza source inválido a mapamex', async () => {
-            global.fetch.mockResolvedValueOnce({
-                ok: true,
-                json: async () => ({ features: [] }),
-            });
-            await fetchMunicipiosGeometries('invalido', ['014']);
-            const params = new URL(global.fetch.mock.calls[0][0], 'http://x').searchParams;
-            expect(params.get('source')).toBe('mapamex');
         });
     });
 });

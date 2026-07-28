@@ -90,12 +90,23 @@ const findLayerBySlugOrAlias = (ref, layersArray) => {
     return null;
 };
 
+const LEGACY_LAYER_ID_ALIASES = {
+    limite_mapamex: 'limite_estatal',
+    limite_iieg: 'limite_estatal',
+    limite_inegi: 'limite_estatal',
+    limite_municipal_inegi: 'limite_municipal',
+};
+
 export const resolveRefToId = (ref, layersArray) => {
     if (!ref) return null;
     const directHit = findLayerDef(ref, layersArray);
     if (directHit) return directHit.id;
     const slugHit = findLayerBySlugOrAlias(ref, layersArray);
-    return slugHit ? slugHit.id : null;
+    if (slugHit) return slugHit.id;
+    const legacy = LEGACY_LAYER_ID_ALIASES[String(ref).toLowerCase()];
+    if (!legacy) return null;
+    const legacyHit = findLayerDef(legacy, layersArray) || findLayerBySlugOrAlias(legacy, layersArray);
+    return legacyHit ? legacyHit.id : null;
 };
 
 export const slugForLayer = (layerId, layersArray) => {

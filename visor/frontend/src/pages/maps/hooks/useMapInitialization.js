@@ -5,7 +5,7 @@ import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
 import { fromLonLat } from 'ol/proj';
 import { getDefaultMapView, getMinZoom } from '@pages/maps/helpers/defaultView';
-import { RELIEF_OVERLAY, RELIEF_OVERLAY_Z_INDEX } from '@pages/maps/helpers/basemaps';
+import { createReliefSource, RELIEF_OVERLAY_Z_INDEX } from '@pages/maps/helpers/basemaps';
 
 export const useMapInitialization = ({ targetRef, mapRef, baseMapRef, labelsOverlayRef, reliefOverlayRef, basemaps, baseMapId }) => {
     const [searchParams] = useSearchParams();
@@ -47,12 +47,11 @@ export const useMapInitialization = ({ targetRef, mapRef, baseMapRef, labelsOver
             ? initialConfig.createLabelsOverlay()
             : null;
         const reliefLayer = new TileLayer({
-            source: RELIEF_OVERLAY.mapamex(),
+            source: createReliefSource(),
             preload: Infinity,
             zIndex: RELIEF_OVERLAY_Z_INDEX,
             visible: baseMapId !== 'sin_visor',
         });
-        reliefLayer.set('reliefVariant', 'mapamex');
         reliefLayer.on('prerender', (evt) => {
             evt.context.globalCompositeOperation = 'multiply';
         });

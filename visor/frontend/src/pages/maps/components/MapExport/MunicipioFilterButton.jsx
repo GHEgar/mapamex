@@ -35,7 +35,7 @@ const MunicipioFilterButton = ({ municipioMode, onOpenChange, collapsed = false 
         setIsOpen(open);
         onOpenChange?.(open);
         if (open) {
-            trackMunicipioPanelOpen({ source: municipioMode.sourceId, active: municipioMode.active });
+            trackMunicipioPanelOpen({ active: municipioMode.active });
         }
     };
 

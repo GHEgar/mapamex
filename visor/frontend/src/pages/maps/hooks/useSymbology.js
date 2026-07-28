@@ -180,7 +180,7 @@ export const useSymbology = ({
 
             if (isStartupRef.current) {
                 isStartupRef.current = false;
-                const limiteLayer = allParentLayers.find(l => l.id === 'limite_mapamex') || allIndividualLayers.find(l => l.id === 'limite_mapamex');
+                const limiteLayer = allParentLayers.find(l => l.id === 'limite_estatal') || allIndividualLayers.find(l => l.id === 'limite_estatal');
                 if (limiteLayer) {
                     return limiteLayer;
                 }

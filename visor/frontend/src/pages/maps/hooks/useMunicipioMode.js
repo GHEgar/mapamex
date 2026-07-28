@@ -9,7 +9,6 @@ import {
     trackMunicipioSelectionChange,
 } from '@services/analyticsService';
 
-const INEGI_BASE_IDS = new Set(['limite_inegi', 'limite_municipal_inegi']);
 
 export const SCOPE_TYPES = {
     MUNICIPIO: 'municipio',
@@ -34,11 +33,6 @@ export const useMunicipioMode = ({ activeLayerIds }) => {
     const listAbortRef = useRef(null);
     const geomAbortRef = useRef(null);
     const enteredAtRef = useRef(null);
-
-    const sourceId = useMemo(() => {
-        const ids = activeLayerIds || [];
-        return ids.some(id => INEGI_BASE_IDS.has(id)) ? 'inegi' : 'mapamex';
-    }, [activeLayerIds]);
 
     const regiones = useMemo(() => {
         const map = new Map();
@@ -85,7 +79,7 @@ export const useMunicipioMode = ({ activeLayerIds }) => {
         }
     }, []);
 
-    const loadGeometries = useCallback(async (claves, src) => {
+    const loadGeometries = useCallback(async (claves) => {
         if (!Array.isArray(claves) || claves.length === 0) {
             setGeometries([]);
             setUnionBbox(null);
@@ -97,7 +91,7 @@ export const useMunicipioMode = ({ activeLayerIds }) => {
         setGeomLoading(true);
         setError(null);
         try {
-            const result = await fetchMunicipiosGeometries(src, claves, { signal: controller.signal });
+            const result = await fetchMunicipiosGeometries(claves, { signal: controller.signal });
             setGeometries(result.items || []);
             setUnionBbox(result.unionBbox || null);
             return result;
@@ -116,8 +110,8 @@ export const useMunicipioMode = ({ activeLayerIds }) => {
             setUnionBbox(null);
             return;
         }
-        loadGeometries(selected, sourceId);
-    }, [active, selected, sourceId, loadGeometries]);
+        loadGeometries(selected);
+    }, [active, selected, loadGeometries]);
 
     useEffect(() => {
         if (allMunicipios.length === 0 && !listLoading) {
@@ -191,7 +185,7 @@ export const useMunicipioMode = ({ activeLayerIds }) => {
         if (!type) {
             setScopeState({ type: null, value: null });
             setSelected([]);
-            trackMunicipioSelectionChange({ source: sourceId, count: 0, action: 'clear' });
+            trackMunicipioSelectionChange({ count: 0, action: 'clear' });
             return;
         }
         const claves = resolveClavesForScope(type, value, allMunicipios);
@@ -200,12 +194,12 @@ export const useMunicipioMode = ({ activeLayerIds }) => {
         setActive(prev => {
             if (!prev) {
                 enteredAtRef.current = Date.now();
-                trackMunicipioModeEnter({ source: sourceId, count: claves.length, fromUrl: false });
+                trackMunicipioModeEnter({ count: claves.length, fromUrl: false });
             }
             return true;
         });
-        trackMunicipioSelectionChange({ source: sourceId, count: claves.length, action: `set_${type}` });
-    }, [sourceId, allMunicipios, resolveClavesForScope]);
+        trackMunicipioSelectionChange({ count: claves.length, action: `set_${type}` });
+    }, [allMunicipios, resolveClavesForScope]);
 
     const enter = useCallback(async (initialClaves = [], { fromUrl = false } = {}) => {
         const wasActive = active;
@@ -225,21 +219,21 @@ export const useMunicipioMode = ({ activeLayerIds }) => {
         if (allMunicipios.length === 0 && !listLoading) {
             loadList();
         }
-        trackMunicipioModeEnter({ source: sourceId, count: unique.length, fromUrl });
-    }, [active, loadList, sourceId, allMunicipios.length, listLoading]);
+        trackMunicipioModeEnter({ count: unique.length, fromUrl });
+    }, [active, loadList, allMunicipios.length, listLoading]);
 
     const exit = useCallback(() => {
         const startedAt = enteredAtRef.current;
         const durationSec = startedAt ? Math.round((Date.now() - startedAt) / 1000) : 0;
         enteredAtRef.current = null;
-        trackMunicipioModeExit({ durationSec, source: sourceId });
+        trackMunicipioModeExit({ durationSec });
         setActive(false);
         setScopeState({ type: null, value: null });
         setSelected([]);
         setGeometries([]);
         setUnionBbox(null);
         setError(null);
-    }, [sourceId]);
+    }, []);
 
     useEffect(() => () => {
         listAbortRef.current?.abort();
@@ -251,7 +245,6 @@ export const useMunicipioMode = ({ activeLayerIds }) => {
         scope,
         scopeLabel,
         selected,
-        sourceId,
         allMunicipios,
         regiones,
         geometries,
@@ -266,7 +259,7 @@ export const useMunicipioMode = ({ activeLayerIds }) => {
         setScope,
         loadList,
     }), [
-        active, scope, scopeLabel, selected, sourceId,
+        active, scope, scopeLabel, selected,
         allMunicipios, regiones, geometries, listLoading, geomLoading, error,
         municipioContext, isInsideMunicipios, polygonIntersectsMunicipios,
         enter, exit, setScope, loadList,

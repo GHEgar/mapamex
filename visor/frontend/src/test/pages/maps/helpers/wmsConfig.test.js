@@ -9,6 +9,7 @@ const {
     hasWMSConfig,
     resolveTimeStyle,
     findLayerDef,
+    resolveRefToId,
     JALISCO_BOUNDS
 } = await import('@pages/maps/helpers/wmsConfig');
 
@@ -207,5 +208,36 @@ describe('findLayerDef', () => {
 
     it('retorna null para ID inexistente', () => {
         expect(findLayerDef('fantasma', LAYERS)).toBeNull();
+    });
+});
+
+describe('resolveRefToId — compatibilidad con shares y URLs previos a INEGI único', () => {
+    const CANONICAS = [
+        { id: 'limite_estatal', wmsConfig: { workspace: 'general', layerName: 'general:limites_estatales' } },
+        { id: 'limite_municipal', wmsConfig: { workspace: 'general', layerName: 'general:limite_municipal' } },
+        { id: 'regiones', wmsConfig: { workspace: 'general', layerName: 'general:regiones' } },
+    ];
+
+    it.each([
+        ['limite_mapamex', 'limite_estatal'],
+        ['limite_iieg', 'limite_estatal'],
+        ['limite_inegi', 'limite_estatal'],
+        ['limite_municipal_inegi', 'limite_municipal'],
+    ])('mapea el id viejo %s a %s', (viejo, esperado) => {
+        expect(resolveRefToId(viejo, CANONICAS)).toBe(esperado);
+    });
+
+    it('resuelve los ids canónicos sin pasar por el alias', () => {
+        expect(resolveRefToId('limite_estatal', CANONICAS)).toBe('limite_estatal');
+        expect(resolveRefToId('regiones', CANONICAS)).toBe('regiones');
+    });
+
+    it('el alias nunca ensombrece una capa real con ese id', () => {
+        const conCapaReal = [{ id: 'limite_inegi', wmsConfig: { workspace: 'general', layerName: 'x' } }, ...CANONICAS];
+        expect(resolveRefToId('limite_inegi', conCapaReal)).toBe('limite_inegi');
+    });
+
+    it('retorna null para un id desconocido', () => {
+        expect(resolveRefToId('capa_fantasma', CANONICAS)).toBeNull();
     });
 });

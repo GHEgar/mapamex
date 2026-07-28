@@ -112,7 +112,7 @@ export const useShareSerializer = () => {
         const selectedSlug = selectedLayerForSymbology?.id ? slugForLayer(selectedLayerForSymbology.id, layerTree) : null;
 
         const municipioPayload = (municipioMode?.active && Array.isArray(municipioMode.selected) && municipioMode.selected.length > 0)
-            ? { source: municipioMode.sourceId || 'mapamex', selected: [...municipioMode.selected] }
+            ? { selected: [...municipioMode.selected] }
             : null;
 
         const basePayload = {

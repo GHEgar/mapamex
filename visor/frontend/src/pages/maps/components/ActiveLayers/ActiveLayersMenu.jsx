@@ -1,10 +1,7 @@
 import { useState, useRef } from 'react';
-import { BRAND } from '@constants/brand';
 import Panel from '@components/Panel';
 import Tooltip from '@components/Tooltip';
 import Icon from '@components/Icon';
-import Divider from '@components/Divider';
-import Switch from '@components/Switch';
 import ConfirmDropdown from '@components/ConfirmDropdown';
 
 const MenuRow = ({ icon, iconState = 'normal', label, onClick, disabled = false, count = 0, danger = false }) => (
@@ -29,11 +26,9 @@ const ActiveLayersMenu = ({
     visibilityCount,
     hasActiveLoops,
     activeLoopsCount,
-    isInegiMode,
     onToggleVisibilityAll,
     onRemoveAll,
     onPauseAll,
-    onToggleBaseMode,
     onOpenSearch,
     onAnyPanelOpenChange,
 }) => {
@@ -132,21 +127,6 @@ const ActiveLayersMenu = ({
                             count={activeLoopsCount}
                         />
                     )}
-
-                    <Divider className="my-1.5" />
-
-                    <div className="flex items-center justify-between px-3 py-1.5">
-                        <span className="font-sans font-medium text-sm text-graphite">Capas base</span>
-                        <Switch
-                            checked={!isInegiMode}
-                            onChange={onToggleBaseMode}
-                            onLabel="IIEG"
-                            offLabel="INEGI"
-                            onColor={noLayers ? '#d1d5db' : BRAND.PRIMARY_DEEP}
-                            offColor={BRAND.SECONDARY}
-                            tooltip={noLayers ? 'Activar capas IIEG' : (isInegiMode ? 'Cambiar a IIEG' : 'Cambiar a INEGI')}
-                        />
-                    </div>
                 </div>
             </Panel>
         </>

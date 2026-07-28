@@ -13,9 +13,17 @@ export const RELEASE_TAGS = {
 
 const FALLBACK_NOTES = [
     {
+        version: '1.83.0',
+        items: [
+            { text: 'Los límites estatales, municipales y las regiones ahora usan una sola base cartográfica geoestadística (INEGI). Se retiró el switch de capas base del menú de capas activas: ya no hay que elegir entre dos versiones del mismo límite.', tag: 'changed' },
+            { text: 'Las capas temáticas municipales cargan más rápido: al quedar una sola geometría por municipio, sus peticiones ahora se sirven desde el caché de tiles.', tag: 'perf' },
+            { text: 'La ficha de información de las capas temáticas ahora incluye la región del municipio.', tag: 'added' },
+        ],
+    },
+    {
         version: '1.79.0',
         items: [
-            { text: 'Agregamos un sombreado de relieve que resalta la topografía del estado por encima del mapa; permanece visible mientras haya un mapa base y se adapta automáticamente a la vista MapaMex o INEGI.', tag: 'added' },
+            { text: 'Agregamos un sombreado de relieve que resalta la topografía del estado por encima del mapa; permanece visible mientras haya un mapa base.', tag: 'added' },
         ],
     },
     {
@@ -236,7 +244,7 @@ const FALLBACK_NOTES = [
     {
         version: '1.21.1',
         items: [
-            { text: 'Los límites estatales, regionales y municipales (MapaMex e INEGI) ahora se muestran automáticamente arriba de cualquier capa de polígono activa, para que sus etiquetas no queden tapadas. En el panel de capas activas verás un ícono de pin en estas capas indicando que se mantienen siempre visibles.', tag: 'added' },
+            { text: 'Los límites estatales, regionales y municipales ahora se muestran automáticamente arriba de cualquier capa de polígono activa, para que sus etiquetas no queden tapadas. En el panel de capas activas verás un ícono de pin en estas capas indicando que se mantienen siempre visibles.', tag: 'added' },
         ],
     },
     {

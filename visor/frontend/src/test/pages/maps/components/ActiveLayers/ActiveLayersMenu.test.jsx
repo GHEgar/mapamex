@@ -10,11 +10,9 @@ const baseProps = {
     visibilityCount: 2,
     hasActiveLoops: false,
     activeLoopsCount: 0,
-    isInegiMode: false,
     onToggleVisibilityAll: vi.fn(),
     onRemoveAll: vi.fn(),
     onPauseAll: vi.fn(),
-    onToggleBaseMode: vi.fn(),
     onOpenSearch: vi.fn(),
     onAnyPanelOpenChange: vi.fn(),
 };
@@ -34,13 +32,12 @@ describe('ActiveLayersMenu', () => {
         expect(screen.queryByText(/Ocultar mis capas/i)).not.toBeInTheDocument();
     });
 
-    it('abre el menú y muestra las filas de acción y el switch', () => {
+    it('abre el menú y muestra las filas de acción', () => {
         renderMenu();
         openMenu();
         expect(screen.getByText(/Ocultar mis capas/i)).toBeInTheDocument();
         expect(screen.getByText(/Buscar capas/i)).toBeInTheDocument();
         expect(screen.getByText(/Eliminar mis capas/i)).toBeInTheDocument();
-        expect(screen.getByText('IIEG')).toBeInTheDocument();
     });
 
     it('invoca onOpenSearch al hacer click en Buscar', () => {

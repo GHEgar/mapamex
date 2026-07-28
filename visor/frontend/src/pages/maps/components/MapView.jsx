@@ -4,7 +4,6 @@ import { useFeatureInfo } from '@hooksMaps/useFeatureInfo';
 import { useMapInitialization } from '@hooksMaps/useMapInitialization';
 import { useBaseMapManager } from '@hooksMaps/useBaseMapManager';
 import { useReliefOverlay } from '@hooksMaps/useReliefOverlay';
-import { isInegiBaseMode } from '@pages/maps/helpers/basemaps';
 import { useLayers } from '@hooks/useLayers';
 
 import { useWMSLayerFactory } from '@hooksMaps/useWMSLayerFactory';
@@ -69,7 +68,6 @@ const MapView = ({ paneIndex = null, className = 'absolute inset-0 w-full h-full
     const baseMapRef = useRef(null);
     const labelsOverlayRef = useRef(null);
     const reliefOverlayRef = useRef(null);
-    const isInegiMode = useMemo(() => isInegiBaseMode(activeLayerIds), [activeLayerIds]);
 
     const handlePaneClick = useCallback(async (map, coordinate, evt) => {
         if (isCompare && !isActiveSlotPane && setActiveSlot) {
@@ -85,7 +83,7 @@ const MapView = ({ paneIndex = null, className = 'absolute inset-0 w-full h-full
 
     const { mapInstance: localMapInstance } = useMapInitialization({ targetRef, mapRef, baseMapRef, labelsOverlayRef, reliefOverlayRef, basemaps: ctx.basemaps, baseMapId: ctx.baseMapId });
     useBaseMapManager(baseMapRef, ctx.basemaps, ctx.baseMapId, mapRef, labelsOverlayRef);
-    useReliefOverlay(reliefOverlayRef, ctx.baseMapId, isInegiMode);
+    useReliefOverlay(reliefOverlayRef, ctx.baseMapId);
 
     useEffect(() => {
         if (!isCompare || !setPaneMapInstance) return undefined;
@@ -105,7 +103,7 @@ const MapView = ({ paneIndex = null, className = 'absolute inset-0 w-full h-full
     });
 
     useMapInteractions(mapRef, handlePaneClick, isDrawing, markerClickedRef, editingClickedRef, ctx.municipioMode?.isInsideMunicipios);
-    useWMSFilterUpdater({ mapRef, wmsLayersRef, filters, getFilter, combineCQLFilters, activeLayerIds, municipioContext });
+    useWMSFilterUpdater({ mapRef, wmsLayersRef, filters, getFilter, combineCQLFilters, municipioContext });
 
     useEffect(() => {
         const map = mapRef.current;
