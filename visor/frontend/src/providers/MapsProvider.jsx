@@ -20,12 +20,13 @@ import { useLayerSelection } from '@hooksMaps/useLayerSelectionPulse';
 import { useMapEditing } from '@hooksMaps/useMapEditing';
 import { useSwipeMode } from '@hooksMaps/useSwipeMode';
 import { useMunicipioMode } from '@hooksMaps/useMunicipioMode';
+import { useEstadoMode } from '@hooksMaps/useEstadoMode';
 import { useMunicipioMask } from '@hooksMaps/useMunicipioMask';
 import { useMunicipioFit } from '@hooksMaps/useMunicipioFit';
 import { toLonLat } from 'ol/proj';
 
 const MapsProvider = ({ children }) => {
-    const { layers: allLayers } = useLayers();
+    const { layers: allLayers, initialOrder } = useLayers();
     const { basemaps, basemapOrder } = useBasemaps();
     const [baseMapId, setBaseMapId] = useState('voyager');
     const [siderCollapsed, setSiderCollapsed] = useState(true);
@@ -58,13 +59,12 @@ const MapsProvider = ({ children }) => {
     const { activeLayerIds: lmActiveLayerIds, findLayerById: lmFindLayerById } = layerManagement;
     useEffect(() => {
         lmActiveLayerIds.forEach((id) => {
-            const node = lmFindLayerById(id);
-            const badge = node?.badge;
-            if (badge?.enabled && isBadgeInValidityWindow(badge)) {
-                markBadgeSeen(id, badge);
-            }
+            const badge = lmFindLayerById(id)?.badge;
+            if (badge?.enabled && isBadgeInValidityWindow(badge)) markBadgeSeen(id, badge);
         });
     }, [lmActiveLayerIds, lmFindLayerById]);
+
+    const estadoMode = useEstadoMode({ mapRef, initialOrder, ...layerManagement });
 
     const layerOpacity = useLayerOpacity(layerManagement.getAllChildLayerIds, layerManagement.activeLayerIds);
     const cqlFilter = useCQLFilter();
@@ -202,9 +202,7 @@ const MapsProvider = ({ children }) => {
 
     const mapDrawing = useMapDrawing(mapRef, handlePolygonComplete, handleShowCachedSelection);
 
-    const municipioMode = useMunicipioMode({
-        activeLayerIds: layerManagement.activeLayerIds,
-    });
+    const municipioMode = useMunicipioMode({ activeLayerIds: layerManagement.activeLayerIds, activeEstado: estadoMode.activeEstado });
     municipioModeRef.current = municipioMode;
 
     useMunicipioMask({
@@ -276,6 +274,7 @@ const MapsProvider = ({ children }) => {
         setIsLocating,
         ...swipeMode,
         municipioMode: { ...municipioMode, centerOnSelection: centerOnMunicipioSelection },
+        estadoMode,
         centerOnLayer,
         pulseLayer,
         cancelPulse,
@@ -306,7 +305,7 @@ const MapsProvider = ({ children }) => {
         isLocating,
         allLayers,
         swipeMode,
-        municipioMode,
+        municipioMode, estadoMode,
         centerOnMunicipioSelection,
         centerOnLayer,
         pulseLayer,

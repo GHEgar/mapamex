@@ -5,6 +5,7 @@ import SwipeView from '@mapsComponents/SwipeView';
 import SwipeSlotControls from '@mapsComponents/SwipeSlotControls';
 import MapSider from '@mapsComponents/MapSider';
 import MunicipioActiveChip from '@mapsComponents/MapExport/MunicipioActiveChip';
+import EstadoPill from '@mapsComponents/EstadoPill';
 import MapLayersPanels from '@mapsComponents/MapLayersPanels';
 import LayerDetailModal from './components/LayerDetailModal/LayerDetailModal';
 import InfoBox from './components/InfoBox/InfoBox';
@@ -42,6 +43,7 @@ const Maps = () => {
                 </p>
                 <div className="relative w-full h-dvh">
                     <MapSider />
+                    <EstadoPill />
                     <MunicipioActiveChip />
                     <MapLayersPanels />
                     <LayerDetailModal />

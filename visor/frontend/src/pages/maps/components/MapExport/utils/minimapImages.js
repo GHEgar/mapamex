@@ -4,6 +4,7 @@ import federalSinMapa from '@assets/images/minimap_federal_sin_mapa.webp';
 import estatalVoyager from '@assets/images/minimap_estatal_voyager.webp';
 import estatalPositron from '@assets/images/minimap_estatal_positron.webp';
 import estatalSinMapa from '@assets/images/minimap_estatal_sin_mapa.webp';
+import { JALISCO_ESTADO } from '@pages/maps/hooks/useEstadoMode';
 
 const MINIMAP_IMAGES = {
     voyager:    { federal: federalVoyager,  estatal: estatalVoyager  },
@@ -18,8 +19,10 @@ const MINIMAP_BOUNDS = {
 
 const MIN_ZOOM = 8;
 
-export const getMinimapImage = (baseMapId, viewType, zoom) => {
-    const level = (viewType === 'full-state' || zoom <= MIN_ZOOM) ? 'federal' : 'estatal';
+export const getMinimapImage = (baseMapId, viewType, zoom, estadoCve = JALISCO_ESTADO) => {
+    const level = (viewType === 'full-state' || zoom <= MIN_ZOOM || estadoCve !== JALISCO_ESTADO)
+        ? 'federal'
+        : 'estatal';
     const basemap = MINIMAP_IMAGES[baseMapId] || MINIMAP_IMAGES.voyager;
     return { url: basemap[level], bounds: MINIMAP_BOUNDS[level] };
 };

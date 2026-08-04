@@ -1,5 +1,17 @@
 
-const processLayerTree = (layer, tema, temaLabel, subtema, subtemaLabel) => {
+const DEFAULT_SEARCH_ESTADO = '14';
+
+let searchEstado = DEFAULT_SEARCH_ESTADO;
+
+export const setSearchEstado = (cve) => {
+    searchEstado = cve || DEFAULT_SEARCH_ESTADO;
+};
+
+export const getSearchEstado = () => searchEstado;
+
+const matchesSearchEstado = (config) => !config.estado || config.estado === searchEstado;
+
+const processLayerTree = (layer, tema, temaLabel, subtema, subtemaLabel, estado) => {
     const result = {};
 
     if (!layer || !layer.id) return result;
@@ -15,7 +27,7 @@ const processLayerTree = (layer, tema, temaLabel, subtema, subtemaLabel) => {
             if (childHasChildren) {
                 Object.assign(
                     result,
-                    processLayerTree(child, tema, temaLabel, child.id, child.label)
+                    processLayerTree(child, tema, temaLabel, child.id, child.label, estado)
                 );
             } else if (child.wmsConfig) {
                 const searchMeta = child.searchMeta || {};
@@ -29,6 +41,7 @@ const processLayerTree = (layer, tema, temaLabel, subtema, subtemaLabel) => {
                     temaLabel: temaLabel || '',
                     subtema: subtema || '',
                     subtemaLabel: subtemaLabel || '',
+                    estado: estado || null,
                     label,
                     searchableFields: searchMeta.searchableFields || [],
                     hasMunicipio: searchMeta.hasMunicipio || false,
@@ -51,6 +64,7 @@ const processLayerTree = (layer, tema, temaLabel, subtema, subtemaLabel) => {
             temaLabel: temaLabel || '',
             subtema: subtema || tema || '',
             subtemaLabel: subtemaLabel || temaLabel || '',
+            estado: estado || null,
             label,
             searchableFields: searchMeta.searchableFields || [],
             hasMunicipio: searchMeta.hasMunicipio || false,
@@ -70,7 +84,7 @@ export const rebuildSearchConfig = (tree) => {
     const config = {};
     if (Array.isArray(tree)) {
         tree.forEach(temaLayer => {
-            Object.assign(config, processLayerTree(temaLayer, temaLayer.id, temaLayer.label));
+            Object.assign(config, processLayerTree(temaLayer, temaLayer.id, temaLayer.label, undefined, undefined, temaLayer.cveEnt));
         });
     }
     SEARCH_CONFIG = config;
@@ -253,6 +267,7 @@ export const findBestMatch = (keyword) => {
 
     Object.entries(SEARCH_CONFIG).forEach(([layerId, config]) => {
         if (!config || !config.label) return;
+        if (!matchesSearchEstado(config)) return;
 
         const score = scoreLayerMatch(config, normalized);
 
@@ -280,6 +295,7 @@ export const findAllMatches = (keyword, minScore = 10) => {
     keywordWords.forEach(word => {
         Object.entries(SEARCH_CONFIG).forEach(([layerId, config]) => {
             if (!config || !config.label) return;
+            if (!matchesSearchEstado(config)) return;
 
             const score = scoreLayerMatch(config, word);
 

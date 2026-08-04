@@ -3,7 +3,7 @@ import { EXPORT_DIMENSIONS } from '../utils/exportDimensions';
 const { MAP_WIDTH, MAP_HEIGHT } = EXPORT_DIMENSIONS;
 import { transform, transformExtent, getPointResolution } from 'ol/proj';
 import View from 'ol/View';
-import { JALISCO_BOUNDS } from '../../../helpers/wmsConfig';
+import { getActiveEstadoBounds } from '../../../helpers/estadoBounds';
 import { ensureExportProjection, EXPORT_PROJECTION } from '../utils/exportProjection';
 import { useMapView } from './useMapView';
 import { composeSwipeCanvas } from '../utils/swipeComposition';
@@ -183,7 +183,7 @@ export const useMapCapture = () => {
             allManagedRefs.forEach(m => m.setView(exportView));
 
             if (viewType === 'full-state') {
-                const stateExtent = transformExtent(JALISCO_BOUNDS.coords, 'EPSG:4326', EXPORT_PROJECTION);
+                const stateExtent = transformExtent(getActiveEstadoBounds().coords, 'EPSG:4326', EXPORT_PROJECTION);
                 exportView.fit(stateExtent, { padding: [50, 50, 50, 50], duration: 0 });
             } else if (extent) {
                 const projectedExtent = transformExtent(extent, 'EPSG:4326', EXPORT_PROJECTION);

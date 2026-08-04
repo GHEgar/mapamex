@@ -179,8 +179,8 @@ const hasActiveChildLayers = (category, activeLayerIds) => {
     return descendantIds.some(id => activeLayerIds.includes(id));
 };
 
-const createCategoryItems = ({ isHovered, activeLayerIds, onToggleLayer, layers = [], isBadgeSeen }) =>
-    layers.filter(category => !category.hiddenInMenu).map(category => {
+const createCategoryItems = ({ isHovered, activeLayerIds, onToggleLayer, layers = [], isBadgeSeen, activeEstado }) =>
+    layers.filter(c => !c.hiddenInMenu && (!c.cveEnt || c.cveEnt === activeEstado)).map(category => {
         const hasActiveLayers = hasActiveChildLayers(category, activeLayerIds);
         const hasUnseenBadge = typeof isBadgeSeen === 'function'
             && themeHasUnseenBadge(category, isBadgeSeen);

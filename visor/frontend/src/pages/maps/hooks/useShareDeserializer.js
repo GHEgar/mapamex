@@ -4,6 +4,7 @@ import { useMapsContext } from '@hooks/useMaps';
 import { useLayers } from '@hooks/useLayers';
 import { resolveRefToId } from '@pages/maps/helpers/wmsConfig';
 import { initialCompareMode } from '@pages/maps/helpers/swipeMode';
+import { ESTADO_CVE_REGEX } from '@pages/maps/hooks/useEstadoMode';
 
 const VIEW_RETRY_INTERVAL_MS = 100;
 const VIEW_RETRY_MAX_ATTEMPTS = 60;
@@ -77,6 +78,7 @@ export const useShareDeserializer = () => {
         setCompareMode,
         restoreAnnotations,
         municipioMode,
+        estadoMode,
     } = useMapsContext();
     const { layers: layerTree } = useLayers();
 
@@ -84,6 +86,23 @@ export const useShareDeserializer = () => {
         if (!envelope || (envelope.version !== 1 && envelope.version !== 2)) return false;
         if (envelope.kind !== 'single' && envelope.kind !== 'swipe') return false;
         const isSwipe = envelope.kind === 'swipe';
+
+        const applyEstadoFromShare = (explicit, layerIds, view) => {
+            if (!estadoMode?.setEstado) return;
+            if (typeof explicit === 'string' && ESTADO_CVE_REGEX.test(explicit)) {
+                estadoMode.setEstado(explicit, { skipLayerPurge: true, skipFit: !!view });
+                return;
+            }
+            for (const id of layerIds || []) {
+                const theme = estadoMode.findRootTheme?.(id);
+                if (theme?.cveEnt) {
+                    if (theme.cveEnt !== estadoMode.activeEstado) {
+                        estadoMode.setEstado(theme.cveEnt, { skipLayerPurge: true, skipFit: !!view });
+                    }
+                    return;
+                }
+            }
+        };
 
         if (isSwipe) {
             const payload = envelope.payload || {};
@@ -100,6 +119,8 @@ export const useShareDeserializer = () => {
             };
             const activeSlot = payload.activeSlot === 'B' ? 'B' : 'A';
             const livePane = activeSlot === 'A' ? paneA : paneB;
+
+            applyEstadoFromShare(shared.estado, [...paneA.activeLayerIds, ...paneB.activeLayerIds], shared.view);
 
             setActiveLayerIds(livePane.activeLayerIds);
             if (typeof setHiddenLayerIds === 'function') setHiddenLayerIds(livePane.hiddenLayerIds);
@@ -184,6 +205,8 @@ export const useShareDeserializer = () => {
             });
         });
 
+        applyEstadoFromShare(payload.estado, resolvedIds, payload.view);
+
         setActiveLayerIds(resolvedIds);
         if (typeof setHiddenLayerIds === 'function') setHiddenLayerIds(hidden);
         if (typeof setLayerOpacity === 'function') {
@@ -218,5 +241,5 @@ export const useShareDeserializer = () => {
         }
 
         return true;
-    }, [setActiveLayerIds, getAllChildLayerIds, applyFilter, setSelectedLayerForSymbology, findLayerById, setLayerOpacity, setLayerOpacities, setFilters, setHiddenLayerIds, setBaseMapId, mapRef, layerTree, setCompareMode, restoreAnnotations, municipioMode]);
+    }, [setActiveLayerIds, getAllChildLayerIds, applyFilter, setSelectedLayerForSymbology, findLayerById, setLayerOpacity, setLayerOpacities, setFilters, setHiddenLayerIds, setBaseMapId, mapRef, layerTree, setCompareMode, restoreAnnotations, municipioMode, estadoMode]);
 };

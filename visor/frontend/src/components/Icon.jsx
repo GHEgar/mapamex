@@ -167,6 +167,7 @@ const icons = {
     layers: { c: Layers, colors: { normal: 'text-graphite' } },
     general: { c: Layers, colors: { normal: 'text-graphite' } },
     'san-luis-potosi': { c: MapPinned, colors: { normal: 'text-graphite' } },
+    estado: { c: MapPinned, colors: { normal: 'text-graphite' } },
     demografia: { c: Users, colors: { normal: 'text-graphite' } },
     salud: { c: HeartPulse, colors: { normal: 'text-graphite' } },
     economia: { c: ChartLine, colors: { normal: 'text-graphite' } },

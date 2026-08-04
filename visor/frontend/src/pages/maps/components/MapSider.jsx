@@ -49,7 +49,8 @@ const MapSider = ({ className = '' }) => {
         measurements,
         showMarker,
         allLayers,
-        compareMode
+        compareMode,
+        estadoMode
     } = useMapsContext();
 
     const toolsPanelVisible = areMeasurementToolsVisible || areAnnotationToolsVisible || isDrawing || measurements.length > 0;
@@ -182,9 +183,9 @@ const MapSider = ({ className = '' }) => {
     const trioRowRef = useRef(null);
 
     const menuItems = useMemo(() =>
-        createMenuItems({ isHovered: isExpanded, activeLayerIds: contextActiveLayerIds, onToggleLayer, toggleMeasurementTools: handleToggleTools, toggleAnnotationTools: handleToggleAnnotations, toolsButtonRef, areMeasurementToolsVisible, areAnnotationToolsVisible, layers: allLayers, eventos: eventosForSider, isBadgeSeen, baseRow, trioRowRef }),
+        createMenuItems({ isHovered: isExpanded, activeLayerIds: contextActiveLayerIds, onToggleLayer, toggleMeasurementTools: handleToggleTools, toggleAnnotationTools: handleToggleAnnotations, toolsButtonRef, areMeasurementToolsVisible, areAnnotationToolsVisible, layers: allLayers, eventos: eventosForSider, isBadgeSeen, baseRow, trioRowRef, activeEstado: estadoMode?.activeEstado }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isExpanded, baseRow, contextActiveLayerIds, onToggleLayer, handleToggleTools, handleToggleAnnotations, toolsButtonRef, areMeasurementToolsVisible, areAnnotationToolsVisible, allLayers, eventosForSider, badgeSeenVersion]);
+    [isExpanded, baseRow, contextActiveLayerIds, onToggleLayer, handleToggleTools, handleToggleAnnotations, toolsButtonRef, areMeasurementToolsVisible, areAnnotationToolsVisible, allLayers, eventosForSider, badgeSeenVersion, estadoMode?.activeEstado]);
 
     const eventCount = eventosForSider.length;
     const baseItemsEnd = BASE_ITEMS_COUNT;

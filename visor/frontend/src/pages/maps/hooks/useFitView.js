@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { transformExtent } from 'ol/proj';
 import { fetchLayerExtent } from '@services/layerExtentService';
 import { getFitPadding, ACTIVE_LAYERS_PANEL_WIDTH } from '@pages/maps/helpers/mapFit';
-import { JALISCO_BOUNDS } from '@pages/maps/helpers/wmsConfig';
+import { getActiveEstadoBounds } from '@pages/maps/helpers/estadoBounds';
 
 const FIT_DURATION = 500;
 const FIT_MAX_ZOOM = 18;
@@ -28,7 +28,7 @@ export const useFitView = ({ getActiveMap, activeLayerIds, findLayerById, siderW
             const extent = await resolveExtentFromConfig(layer);
             if (extent) return extent;
         }
-        return transformExtent(JALISCO_BOUNDS.coords, 'EPSG:4326', 'EPSG:3857');
+        return transformExtent(getActiveEstadoBounds().coords, 'EPSG:4326', 'EPSG:3857');
     }, [activeLayerIds, findLayerById]);
 
     const fitView = useCallback(async () => {

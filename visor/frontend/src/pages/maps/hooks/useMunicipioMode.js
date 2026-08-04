@@ -8,6 +8,7 @@ import {
     trackMunicipioModeExit,
     trackMunicipioSelectionChange,
 } from '@services/analyticsService';
+import { JALISCO_ESTADO } from '@pages/maps/hooks/useEstadoMode';
 
 
 export const SCOPE_TYPES = {
@@ -19,7 +20,7 @@ export const SCOPE_TYPES = {
 const ZMG_CLAVES = ['14039', '14120', '14098', '14101', '14097', '14070', '14051', '14044', '14124'];
 export const ZMG_LABEL = 'ZMG (Zona Metropolitana de Guadalajara)';
 
-export const useMunicipioMode = ({ activeLayerIds }) => {
+export const useMunicipioMode = ({ activeLayerIds, activeEstado }) => {
     const [active, setActive] = useState(false);
     const [scope, setScopeState] = useState({ type: null, value: null });
     const [selected, setSelected] = useState([]);
@@ -239,6 +240,10 @@ export const useMunicipioMode = ({ activeLayerIds }) => {
         listAbortRef.current?.abort();
         geomAbortRef.current?.abort();
     }, []);
+
+    useEffect(() => {
+        if (active && activeEstado && activeEstado !== JALISCO_ESTADO) exit();
+    }, [active, activeEstado, exit]);
 
     return useMemo(() => ({
         active,

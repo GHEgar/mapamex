@@ -16,7 +16,8 @@ import Badge from '@components/Badge';
 import ScrollContainer from '@components/ScrollContainer';
 import { useMapsContext } from '@hooks/useMaps';
 import { useLayers } from '@hooks/useLayers';
-import { getDefaultMapView } from '@pages/maps/helpers/defaultView';
+import { fromLonLat } from 'ol/proj';
+import { getActiveEstadoBounds } from '@pages/maps/helpers/estadoBounds';
 
 const ActiveLayersListInner = ({ onCollapseChange, onActionsOpenChange }) => {
     const {
@@ -161,8 +162,8 @@ const ActiveLayersListInner = ({ onCollapseChange, onActionsOpenChange }) => {
         setSelectedLayerForSymbology(null);
         setSearchParams({}, { replace: true });
         if (mapRef?.current) {
-            const { center, zoom } = getDefaultMapView();
-            mapRef.current.getView().animate({ center, zoom, duration: 500 });
+            const bounds = getActiveEstadoBounds();
+            mapRef.current.getView().animate({ center: fromLonLat(bounds.center), zoom: bounds.zoom, duration: 500 });
         }
     }, [activeLayerIds, getAllChildLayerIds, clearLayerFilters, onToggleLayer, setSelectedLayerForSymbology, setSearchParams, mapRef]);
 

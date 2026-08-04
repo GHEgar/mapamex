@@ -4,6 +4,7 @@ import { useMapsContext } from '@hooks/useMaps';
 import { useLayers } from '@hooks/useLayers';
 import { findLayerDef, slugForLayer } from '@pages/maps/helpers/wmsConfig';
 import { serializeAnnotations } from '@pages/maps/helpers/annotationsSerialization';
+import { DEFAULT_ESTADO } from '@pages/maps/hooks/useEstadoMode';
 
 const round = (value, decimals) => {
     if (value === null || value === undefined || Number.isNaN(value)) return value;
@@ -73,6 +74,7 @@ export const useShareSerializer = () => {
         compareMode,
         measurements,
         municipioMode,
+        estadoMode,
     } = useMapsContext();
     const { layers: layerTree } = useLayers();
 
@@ -115,6 +117,8 @@ export const useShareSerializer = () => {
             ? { selected: [...municipioMode.selected] }
             : null;
 
+        const estadoPayload = estadoMode?.activeEstado || DEFAULT_ESTADO;
+
         const basePayload = {
             view,
             basemap: baseMapId || null,
@@ -124,6 +128,7 @@ export const useShareSerializer = () => {
         };
         if (annotations) basePayload.annotations = annotations;
         if (municipioPayload) basePayload.municipios = municipioPayload;
+        if (estadoPayload) basePayload.estado = estadoPayload;
 
         if (kind === 'swipe') {
             const activeSlot = compareMode?.activeSlot || extra.activeSlot || 'A';
@@ -144,6 +149,7 @@ export const useShareSerializer = () => {
                 selected: selectedSlug,
             };
             if (municipioPayload) sharedPayload.municipios = municipioPayload;
+            if (estadoPayload) sharedPayload.estado = estadoPayload;
             const swipePayload = {
                 shared: sharedPayload,
                 paneA: {
@@ -170,5 +176,5 @@ export const useShareSerializer = () => {
             kind: 'single',
             payload: basePayload,
         };
-    }, [activeLayerIds, hiddenLayerIds, layerOpacities, filters, selectedLayerForSymbology, baseMapId, dateLoops, loopPrefs, mapRef, layerTree, compareMode, measurements, municipioMode]);
+    }, [activeLayerIds, hiddenLayerIds, layerOpacities, filters, selectedLayerForSymbology, baseMapId, dateLoops, loopPrefs, mapRef, layerTree, compareMode, measurements, municipioMode, estadoMode]);
 };

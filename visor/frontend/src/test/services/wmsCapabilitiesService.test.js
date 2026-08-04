@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { fetchWorkspaceCapabilities, getLayerExtent4326, clearCapabilitiesCache, sanitizeExtent4326 } from '@services/wmsCapabilitiesService';
-import { JALISCO_BOUNDS } from '@pages/maps/helpers/wmsConfig';
+import { getActiveEstadoBounds } from '@pages/maps/helpers/estadoBounds';
 
 const buildCapabilitiesXml = (layers) => {
     const layersXml = layers.map(l => `
@@ -118,15 +118,15 @@ describe('sanitizeExtent4326', () => {
         expect(sanitizeExtent4326(ext)).toBe(ext);
     });
 
-    it('recorta a Jalisco un bbox global corrupto (lat 90 -> sin Infinito al transformar)', () => {
-        expect(sanitizeExtent4326([-180, 4.897, 180, 90])).toEqual(JALISCO_BOUNDS.coords);
+    it('recorta al estado activo un bbox global corrupto (lat 90 -> sin Infinito al transformar)', () => {
+        expect(sanitizeExtent4326([-180, 4.897, 180, 90])).toEqual(getActiveEstadoBounds().coords);
     });
 
-    it('recorta el error de signo en longitud este (+101.5 -> borde de Jalisco)', () => {
+    it('recorta el error de signo en longitud este al borde del estado activo', () => {
         const out = sanitizeExtent4326([-105.7, 18.94, 101.53, 22.56]);
-        const [, , jmaxx] = JALISCO_BOUNDS.coords;
-        expect(out[2]).toBeCloseTo(jmaxx, 5);
-        expect(out[0]).toBeCloseTo(-105.7, 5);
+        const [bminx, , bmaxx] = getActiveEstadoBounds().coords;
+        expect(out[2]).toBeCloseTo(bmaxx, 5);
+        expect(out[0]).toBeCloseTo(bminx, 5);
     });
 
     it('rechaza extents no finitos o malformados', () => {

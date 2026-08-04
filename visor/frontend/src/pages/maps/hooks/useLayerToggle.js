@@ -7,7 +7,7 @@ import { findParentGroup } from '@pages/maps/helpers/layers/utils/layerHelpers';
 import { useLayers } from '@hooks/useLayers';
 import { getLayerPeriodicity } from '@services/layerMetadataService';
 import { fetchLayerExtent } from '@services/layerExtentService';
-import { JALISCO_BOUNDS } from '@pages/maps/helpers/wmsConfig';
+import { getActiveEstadoBounds } from '@pages/maps/helpers/estadoBounds';
 
 const FIT_PADDING = [40, 40, 40, 40];
 const FIT_MAX_ZOOM = 18;
@@ -98,7 +98,7 @@ export const useLayerToggle = ({
 
         if (typeof config === 'number') {
             view.animate({
-                center: fromLonLat(JALISCO_BOUNDS.center),
+                center: fromLonLat(getActiveEstadoBounds().center),
                 zoom: config,
                 duration: FIT_DURATION
             });
@@ -108,7 +108,7 @@ export const useLayerToggle = ({
         } else if (config.zoom) {
             const center = config.center
                 ? fromLonLat(config.center)
-                : fromLonLat(JALISCO_BOUNDS.center);
+                : fromLonLat(getActiveEstadoBounds().center);
             view.animate({ center, zoom: config.zoom, duration: FIT_DURATION });
         }
     }, [findLayerById, mapRef]);

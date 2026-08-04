@@ -1,3 +1,6 @@
+import { findLayerTheme } from '@pages/maps/helpers/wmsConfig';
+import { getSearchEstado } from './searchConfig';
+
 const API_BASE = import.meta.env.VITE_BACKEND_API_HOST || '/api/';
 
 const memoryCache = {
@@ -75,7 +78,15 @@ export const searchLayersRemote = async (q, limit = 50) => {
     if (!res.ok) {
         throw new Error(`GET /layers/search fallo ${res.status}`);
     }
-    return res.json();
+    const results = await res.json();
+    if (!Array.isArray(results) || !Array.isArray(memoryCache.tree)) {
+        return results;
+    }
+    const estado = getSearchEstado();
+    return results.filter(item => {
+        const theme = findLayerTheme(item?.id, memoryCache.tree);
+        return !theme?.cveEnt || theme.cveEnt === estado;
+    });
 };
 
 export const clearLayerTreeCache = () => {

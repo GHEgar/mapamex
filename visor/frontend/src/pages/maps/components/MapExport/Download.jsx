@@ -255,7 +255,7 @@ const Download = ({ onOpenPreview, onOpenChange, collapsed = false, expanded = f
                                 `}
                             >
                                 <div className="font-medium">Estado completo</div>
-                                <div className="text-xs opacity-75">Automático (Todo Jalisco)</div>
+                                <div className="text-xs opacity-75">Automático (estado completo)</div>
                             </button>
                         </div>
                     </div>

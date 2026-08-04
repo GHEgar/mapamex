@@ -27,6 +27,7 @@ export const useFloatingPosition = ({ open, anchorRef, contentRef, placement = '
 
         const placements = {
             'bottom-start': () => ({ top: anchor.bottom + offset, left: anchor.left }),
+            'bottom-center': () => ({ top: anchor.bottom + offset, left: anchor.left + (anchor.width - el.offsetWidth) / 2 }),
             'bottom-end':   () => ({ top: anchor.bottom + offset, left: anchor.right - el.offsetWidth }),
             'top-start':    () => ({ top: anchor.top - el.offsetHeight - offset, left: anchor.left }),
             'top-end':      () => ({ top: anchor.top - el.offsetHeight - offset, left: anchor.right - el.offsetWidth }),

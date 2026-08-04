@@ -1,6 +1,6 @@
 import WMSCapabilities from 'ol/format/WMSCapabilities';
 import { transformExtent } from 'ol/proj';
-import { JALISCO_BOUNDS } from '@pages/maps/helpers/wmsConfig';
+import { getActiveEstadoBounds } from '@pages/maps/helpers/estadoBounds';
 
 const parser = new WMSCapabilities();
 
@@ -17,13 +17,14 @@ export const sanitizeExtent4326 = (ext) => {
         maxy > MERCATOR_MAX_LAT || miny < -MERCATOR_MAX_LAT ||
         (maxx - minx) > SANE_SPAN_DEG || (maxy - miny) > SANE_SPAN_DEG;
     if (!garbage) return ext;
-    const [jx0, jy0, jx1, jy1] = JALISCO_BOUNDS.coords;
+    const bounds = getActiveEstadoBounds();
+    const [jx0, jy0, jx1, jy1] = bounds.coords;
     const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
     minx = clamp(minx, jx0, jx1);
     maxx = clamp(maxx, jx0, jx1);
     miny = clamp(miny, jy0, jy1);
     maxy = clamp(maxy, jy0, jy1);
-    if (maxx - minx < 0.05 || maxy - miny < 0.05) return [...JALISCO_BOUNDS.coords];
+    if (maxx - minx < 0.05 || maxy - miny < 0.05) return [...bounds.coords];
     return [Math.min(minx, maxx), Math.min(miny, maxy), Math.max(minx, maxx), Math.max(miny, maxy)];
 };
 

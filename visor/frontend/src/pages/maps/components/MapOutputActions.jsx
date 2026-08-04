@@ -7,6 +7,7 @@ import ShareActiveChip from './ShareActiveChip';
 import Icon from '@components/Icon';
 import ExportPreview from './MapExport/ExportPreview';
 import { useShareDirtiness } from '@pages/maps/hooks/useShareDirtiness';
+import { DEFAULT_ESTADO, JALISCO_ESTADO } from '@pages/maps/hooks/useEstadoMode';
 import { useMapsContext } from '@hooks/useMaps';
 
 const IS_NON_PROD = ['dev', 'beta'].includes(import.meta.env.VITE_APP_ENV);
@@ -18,7 +19,7 @@ const MapOutputActions = ({ onAnyPanelOpenChange, className }) => {
     const [isDownloadOpen, setIsDownloadOpen] = useState(false);
     const [isMunicipioOpen, setIsMunicipioOpen] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const { municipioMode } = useMapsContext();
+    const { municipioMode, estadoMode } = useMapsContext();
     const [previewFormat, setPreviewFormat] = useState('png');
     const [previewLegends, setPreviewLegends] = useState([]);
     const [previewTitle, setPreviewTitle] = useState('');
@@ -88,7 +89,7 @@ const MapOutputActions = ({ onAnyPanelOpenChange, className }) => {
                     onOpenChange={setIsDownloadOpen}
                     collapsed
                 />
-                {IS_NON_PROD && (
+                {IS_NON_PROD && (estadoMode?.activeEstado ?? DEFAULT_ESTADO) === JALISCO_ESTADO && (
                     <MunicipioFilterButton
                         municipioMode={municipioMode}
                         onOpenChange={setIsMunicipioOpen}

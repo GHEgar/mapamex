@@ -7,6 +7,7 @@ import { useShareDeserializer } from '@pages/maps/hooks/useShareDeserializer';
 import { fetchShare } from '@services/shareService';
 import { trackShareMap } from '@services/analyticsService';
 import { SESSION_STORAGE_KEY } from '@pages/maps/hooks/useSessionPersistence';
+import { DEFAULT_ESTADO, ESTADO_CVE_REGEX } from '@pages/maps/hooks/useEstadoMode';
 
 const MAX_SESSION_BYTES = 200_000;
 
@@ -14,7 +15,7 @@ export const filtersInitializationComplete = { value: false };
 
 export const useInitializeFromUrl = () => {
     const [searchParams] = useSearchParams();
-    const { setActiveLayerIds, getAllChildLayerIds, applyFilter, applyDefaultDate, setSelectedLayerForSymbology, findLayerById, municipioMode } = useMapsContext();
+    const { setActiveLayerIds, getAllChildLayerIds, applyFilter, applyDefaultDate, setSelectedLayerForSymbology, findLayerById, municipioMode, estadoMode } = useMapsContext();
     const { initialOrder: BASE_INITIAL_ORDER, layers: layerTree } = useLayers();
     const deserialize = useShareDeserializer();
     const initialized = useRef(false);
@@ -32,6 +33,33 @@ export const useInitializeFromUrl = () => {
         const claves = parseMunicipiosParam(param);
         if (claves.length > 0 && municipioMode?.enter) {
             municipioMode.enter(claves, { fromUrl: true });
+        }
+    };
+
+    const parseEstadoParam = (raw) => {
+        const value = String(raw || '').trim();
+        return ESTADO_CVE_REGEX.test(value) ? value : null;
+    };
+
+    const inferEstadoFromLayers = (layerIds) => {
+        for (const id of layerIds || []) {
+            const theme = estadoMode?.findRootTheme?.(id);
+            if (theme?.cveEnt) return theme.cveEnt;
+        }
+        return null;
+    };
+
+    const applyEstadoIfRequested = (layerIds) => {
+        if (!estadoMode?.setEstado) return;
+        const skipFit = parseMunicipiosParam(searchParams.get('municipios')).length > 0;
+        const cve = parseEstadoParam(searchParams.get('estado'));
+        if (cve) {
+            estadoMode.setEstado(cve, { skipLayerPurge: true, skipFit });
+            return;
+        }
+        const inferred = inferEstadoFromLayers(layerIds);
+        if (inferred && inferred !== estadoMode.activeEstado) {
+            estadoMode.setEstado(inferred, { skipLayerPurge: true, skipFit });
         }
     };
 
@@ -90,6 +118,7 @@ export const useInitializeFromUrl = () => {
                 const selectedLayer = findLayerById(resolved);
                 if (selectedLayer) setSelectedLayerForSymbology(selectedLayer);
                 allIds.forEach(id => applyDefaultDate(id));
+                applyEstadoIfRequested(allIds);
                 enterMunicipioModeIfRequested();
                 filtersInitializationComplete.value = true;
                 initialized.current = true;
@@ -140,6 +169,7 @@ export const useInitializeFromUrl = () => {
                 applyFilter(layerId, 'date', cqlFilter);
             });
 
+            applyEstadoIfRequested(allIds);
             enterMunicipioModeIfRequested();
 
             filtersInitializationComplete.value = true;
@@ -171,9 +201,15 @@ export const useInitializeFromUrl = () => {
                 }
             } catch { }
 
+            const initialEstado = parseEstadoParam(searchParams.get('estado')) || estadoMode?.activeEstado || DEFAULT_ESTADO;
+            const initialOrder = BASE_INITIAL_ORDER.filter(id => {
+                const theme = estadoMode?.findRootTheme?.(id);
+                return !theme?.cveEnt || theme.cveEnt === initialEstado;
+            });
+
             const allIds = [];
 
-            BASE_INITIAL_ORDER.forEach(id => {
+            initialOrder.forEach(id => {
                 if (!allIds.includes(id)) {
                     allIds.push(id);
                     getAllChildLayerIds(id).forEach(childId => {
@@ -193,11 +229,15 @@ export const useInitializeFromUrl = () => {
                 applyFilter(layerId, 'date', cqlFilter);
             });
 
+            if (estadoMode?.setEstado) {
+                const skipFit = parseMunicipiosParam(searchParams.get('municipios')).length > 0;
+                estadoMode.setEstado(initialEstado, { skipLayerPurge: true, skipFit });
+            }
             enterMunicipioModeIfRequested();
 
             filtersInitializationComplete.value = true;
             initialized.current = true;
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchParams, setActiveLayerIds, getAllChildLayerIds, applyFilter, applyDefaultDate, setSelectedLayerForSymbology, findLayerById, layerTree, BASE_INITIAL_ORDER, deserialize, municipioMode]);
+    }, [searchParams, setActiveLayerIds, getAllChildLayerIds, applyFilter, applyDefaultDate, setSelectedLayerForSymbology, findLayerById, layerTree, BASE_INITIAL_ORDER, deserialize, municipioMode, estadoMode]);
 };
