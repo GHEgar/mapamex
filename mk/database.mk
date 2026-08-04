@@ -5,6 +5,11 @@ define database_load_env
 if [ -f .env ]; then set -a; . ./.env; set +a; fi
 endef
 
+# Las migraciones viven DENTRO de la imagen de jobs: hay que resincronizarla antes de migrar.
+# En el servidor eso es un pull; en local, un build. El guard sobre DATABASE_JOBS_IMAGE cubre
+# un .env.images anterior a que se fijara esa imagen: sin la variable, cae a build.
+JOBS_SYNC := $(if $(and $(filter pull,$(DEPLOY_MODE)),$(DATABASE_JOBS_IMAGE)),pull,build)
+
 .PHONY: help-database database-deploy database-down database-build database-certs \
         database-logs database-logs-primary database-logs-backup database-logs-jobs \
         database-shell database-backup database-restore database-restore-cms database-restore-local database-clean \
@@ -72,7 +77,10 @@ database-certs:
 	fi
 
 database-deploy: database-certs
-	@cd $(DATABASE_DIR) && docker compose up -d --build
+ifeq ($(JOBS_SYNC),pull)
+	@cd $(DATABASE_DIR) && docker compose pull pg-backup jobs
+endif
+	@cd $(DATABASE_DIR) && docker compose up -d $(COMPOSE_BUILD_FLAG)
 
 database-down:
 	@cd $(DATABASE_DIR) && docker compose down
@@ -149,7 +157,7 @@ database-prod-migration:
 
 database-migrate:
 	@printf "$(C_BOLD)» Sincronizando imagen de jobs con el repo...$(C_RESET)\n"
-	@cd $(DATABASE_DIR) && docker compose build jobs
+	@cd $(DATABASE_DIR) && docker compose $(JOBS_SYNC) jobs
 	@cd $(DATABASE_DIR) && docker compose up -d jobs
 	@printf "\n$(C_BOLD)» Estado antes de migrar$(C_RESET)\n"
 	@$(MAKE) _database-migrate-report
