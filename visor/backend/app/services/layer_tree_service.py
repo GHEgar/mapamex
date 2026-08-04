@@ -122,6 +122,9 @@ def _layer_to_dict(layer: Layer, workspace_map: dict[str, Workspace], aliases_ma
                 k: _resolve_storage_icon(v) for k, v in icon_overrides.items()
             }
 
+    if layer.node_type == 'tema' and getattr(layer, 'cve_ent', None):
+        result['cveEnt'] = layer.cve_ent
+
     if layer.hidden_in_menu:
         result['hiddenInMenu'] = True
 
