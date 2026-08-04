@@ -30,8 +30,8 @@ async def get_pool() -> asyncpg.Pool:
             database=_resolve_db_name(),
             ssl='require',
             min_size=1,
-            max_size=max(settings.DB_POOL_SIZE, 4),
-            command_timeout=600,
+            max_size=max(settings.DB_ASYNC_POOL_MAX, 1),
+            command_timeout=settings.DB_COMMAND_TIMEOUT,
         )
     return _pool
 

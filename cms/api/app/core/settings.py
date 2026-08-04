@@ -17,8 +17,8 @@ class Settings(BaseSettings):
     project_name: str = "Cms"
     database_url: str
     database_gis_url: str | None = None
-    database_pool_size: int = 5
-    database_max_overflow: int = 5
+    database_pool_size: int = 1
+    database_max_overflow: int = 1
     database_connect_timeout: int = 3
     database_pool_recycle: int = 1800
     secret_key: str
