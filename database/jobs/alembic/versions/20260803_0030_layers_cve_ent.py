@@ -30,8 +30,8 @@ def upgrade() -> None:
         UPDATE visor.layers
            SET cve_ent = '14', updated_at = NOW()
          WHERE node_type = 'tema' AND deleted_at IS NULL
-           AND id IN ('base_layers','demografia','salud','economia','educacion','desarrollo',
-                      'recursos-y-calidad-de-vida','seguridad','gobierno')
+           AND id IN ('base_layers','general','demografia','salud','economia','educacion',
+                      'desarrollo','recursos-y-calidad-de-vida','seguridad','gobierno')
         """
     )
     bind.exec_driver_sql(
