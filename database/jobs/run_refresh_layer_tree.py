@@ -84,6 +84,7 @@ _LAYER_COLS = [
     'icon_url', 'icon_overrides',
     'notice', 'badge',
     'highlight_color', 'highlight_shape',
+    'cve_ent',
 ]
 
 
@@ -199,6 +200,9 @@ def _layer_to_node(layer: dict, ws_map: dict[str, dict], aliases: dict[str, list
         node['isLabel'] = True
     elif layer['node_type'] == 'group':
         node['forceGroup'] = True
+
+    if layer['node_type'] == 'tema' and layer.get('cve_ent'):
+        node['cveEnt'] = layer['cve_ent']
 
     if layer['node_type'] == 'tema' and layer.get('icon_url'):
         node['iconUrl'] = _resolve_storage_icon(layer['icon_url'])
