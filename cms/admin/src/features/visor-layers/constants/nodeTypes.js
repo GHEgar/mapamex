@@ -35,6 +35,7 @@ export const FIELD_VISIBILITY = {
     alias: ['group', 'leaf'],
     searchTags: ['group', 'leaf'],
     municipioFilter: ['group', 'leaf'],
+    estado: ['tema'],
 };
 
 export const MUNICIPIO_FIELD_TYPE_OPTIONS = [

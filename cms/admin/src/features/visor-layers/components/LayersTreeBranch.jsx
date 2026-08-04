@@ -4,6 +4,7 @@ import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, us
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { isPropertyOfGroup, labelForNode } from '@features/visor-layers/constants/nodeTypes';
+import { entidadLabel } from '@features/visor-layers/constants/entidades';
 import { resolveStorageUrl } from '@shared/utils/storageUrl';
 
 const { Text } = Typography;
@@ -55,6 +56,11 @@ function TitleBlock({ node, selected, isMobile }) {
             <Tag color={isProperty ? 'cyan' : tagColor} style={{ marginRight: 0, fontSize: 10, flexShrink: 0 }}>
                 {labelForNode(node.nodeType, node.parentNodeType)}
             </Tag>
+            {node.nodeType === 'tema' && node.raw?.cveEnt && (
+                <Tag color="geekblue" style={{ fontSize: 10, marginRight: 0, flexShrink: 0 }}>
+                    {entidadLabel(node.raw.cveEnt)}
+                </Tag>
+            )}
             {workspaceAlias && !isMobile && (
                 <Tag color="blue" style={{ fontSize: 10, marginRight: 0, flexShrink: 0 }}>{workspaceAlias}</Tag>
             )}

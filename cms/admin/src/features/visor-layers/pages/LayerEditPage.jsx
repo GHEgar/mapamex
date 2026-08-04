@@ -34,6 +34,7 @@ import {
     isTabVisible,
     isPropertyOfGroup,
 } from '@features/visor-layers/constants/nodeTypes';
+import { ENTIDADES_OPTIONS } from '@features/visor-layers/constants/entidades';
 import MunicipioFieldPicker from '@features/visor-layers/components/MunicipioFieldPicker';
 import { findNodeContext } from '@features/visor-layers/hooks/useLayerTreeAdmin';
 import { message } from '@shared/services/message';
@@ -219,6 +220,7 @@ export default function LayerEditPage() {
             label: data.label,
             slug: data.slug,
             nodeType: data.nodeType,
+            cveEnt: data.cveEnt ?? data.cve_ent ?? null,
             hiddenInMenu: data.hiddenInMenu,
             disabled: data.disabled,
             workspaceAlias: data.workspaceAlias,
@@ -612,6 +614,22 @@ export default function LayerEditPage() {
                     >
                         <Select options={NODE_TYPE_OPTIONS} disabled={isProperty} />
                     </Form.Item>
+                    {isFieldVisible('estado', watchedNodeType) && (
+                        <Form.Item
+                            label="Entidad federativa"
+                            name="cveEnt"
+                            normalize={(v) => v ?? null}
+                            extra="Estado al que pertenece este tema. Vacío = tema global (visible en todos los estados)."
+                        >
+                            <Select
+                                allowClear
+                                showSearch
+                                optionFilterProp="label"
+                                placeholder="Tema global"
+                                options={ENTIDADES_OPTIONS}
+                            />
+                        </Form.Item>
+                    )}
                     {isProperty && (
                         <Alert closable
                             type="info"

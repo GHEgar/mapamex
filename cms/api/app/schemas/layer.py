@@ -10,6 +10,19 @@ NodeType = Literal["tema", "category", "label", "group", "leaf"]
 
 SLUG_PATTERN = r"^[a-z0-9-]+$"
 
+CVE_ENT_PATTERN = r"^(0[1-9]|[12][0-9]|3[0-2])$"
+
+
+def _validate_cve_ent(value: str | None) -> str | None:
+    if value is None or value == "":
+        return None
+    import re
+    if not isinstance(value, str) or not re.match(CVE_ENT_PATTERN, value):
+        raise ValueError(
+            f"cve_ent invalido: '{value}'. Use una clave INEGI de dos digitos entre '01' y '32'."
+        )
+    return value
+
 HIGHLIGHT_COLOR_PRESETS = {"morado", "naranja", "sombreado"}
 HEX_COLOR_PATTERN = r"^#[0-9A-Fa-f]{6}$"
 HighlightColor = str
@@ -202,6 +215,7 @@ class LayerBase(CamelCaseInput):
     label: str = Field(..., min_length=1, max_length=255)
     sort_order: int = Field(default=0, serialization_alias="sortOrder")
     node_type: NodeType = Field(..., serialization_alias="nodeType")
+    cve_ent: str | None = Field(default=None, max_length=2, serialization_alias="cveEnt")
 
     hidden_in_menu: bool = Field(default=False, serialization_alias="hiddenInMenu")
     disabled: bool = False
@@ -255,6 +269,11 @@ class LayerBase(CamelCaseInput):
     def _validate_slug_field(cls, v: str | None) -> str | None:
         return _validate_slug(v)
 
+    @field_validator("cve_ent", mode="before")
+    @classmethod
+    def _validate_cve_ent_field(cls, v):
+        return _validate_cve_ent(v)
+
     @field_validator("highlight_color", mode="before")
     @classmethod
     def _validate_highlight_color_base(cls, v):
@@ -297,6 +316,7 @@ class LayerUpdate(CamelCaseInput):
     label: str | None = Field(default=None, max_length=255)
     sort_order: int | None = Field(default=None, serialization_alias="sortOrder")
     node_type: NodeType | None = Field(default=None, serialization_alias="nodeType")
+    cve_ent: str | None = Field(default=None, max_length=2, serialization_alias="cveEnt")
 
     hidden_in_menu: bool | None = Field(default=None, serialization_alias="hiddenInMenu")
     disabled: bool | None = None
@@ -354,6 +374,11 @@ class LayerUpdate(CamelCaseInput):
     @classmethod
     def _validate_slug_update(cls, v: str | None) -> str | None:
         return _validate_slug(v)
+
+    @field_validator("cve_ent", mode="before")
+    @classmethod
+    def _validate_cve_ent_update(cls, v):
+        return _validate_cve_ent(v)
 
     @field_validator("icon_url", mode="before")
     @classmethod

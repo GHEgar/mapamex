@@ -40,6 +40,10 @@ class Layer(DatabaseBase):
             "slug IS NULL OR (slug ~ '^[a-z0-9-]+$' AND length(slug) <= 60)",
             name="ck_layers_slug_format",
         ),
+        CheckConstraint(
+            "cve_ent IS NULL OR cve_ent ~ '^(0[1-9]|[12][0-9]|3[0-2])$'",
+            name="ck_layers_cve_ent_format",
+        ),
         {"schema": "visor"},
     )
 
@@ -102,6 +106,7 @@ class Layer(DatabaseBase):
     badge = Column(JSONB, nullable=True)
     highlight_color = Column(String(20), nullable=True)
     highlight_shape = Column(String(20), nullable=True)
+    cve_ent = Column(String(2), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=text("NOW()"), nullable=False)
     updated_at = Column(

@@ -165,6 +165,11 @@ def _validate_slug_unique(session: Session, slug: str | None, exclude_layer_id: 
         )
 
 
+def _validate_cve_ent_scope(cve_ent: str | None, node_type: str | None) -> None:
+    if cve_ent is not None and node_type != 'tema':
+        raise ValueError("cve_ent solo puede asignarse a nodos de tipo 'tema'")
+
+
 def create_layer(
     session: Session,
     data: LayerCreate,
@@ -172,6 +177,8 @@ def create_layer(
     skip_geoserver_validation: bool = False,
 ) -> Layer:
     payload = data.model_dump(exclude_unset=False, by_alias=False)
+
+    _validate_cve_ent_scope(payload.get('cve_ent'), payload.get('node_type'))
 
     if not skip_geoserver_validation:
         validate_layer_against_geoserver(
@@ -354,6 +361,12 @@ def update_layer(
 
     if 'slug' in payload:
         _validate_slug_unique(session, payload.get('slug'), exclude_layer_id=layer.id)
+
+    if 'cve_ent' in payload or 'node_type' in payload:
+        _validate_cve_ent_scope(
+            payload.get('cve_ent', layer.cve_ent),
+            payload.get('node_type', layer.node_type),
+        )
 
     if 'infobox_template' in payload or 'infobox_params' in payload:
         template = payload.get('infobox_template', layer.infobox_template)
